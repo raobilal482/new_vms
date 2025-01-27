@@ -14,6 +14,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
@@ -23,8 +24,12 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EventResource extends Resource
 {
+    use Translatable;
     protected static ?string $model = Event::class;
-
+    public static function getTranslatableLocales(): array
+    {
+        return ['en', 'lt'];
+    }
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static ?string $navigationLabel = 'Events';
     protected static ?string $pluralLabel = 'Events';
@@ -165,11 +170,16 @@ class EventResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
+
+                    Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])
                 ->label('Actions') // This is the label for the dropdown button
                 ->icon('heroicon-o-chevron-down'),
+            ])
+            ->headerActions([
+                Tables\Actions\LocaleSwitcher::make()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

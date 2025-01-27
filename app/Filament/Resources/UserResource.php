@@ -6,120 +6,156 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-user-group';
 
-    public static function form(Form $form): Form
+    public static function form(Forms\Form $form): Forms\Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
+                    ->label('Full Name'),
+
+                TextInput::make('email')
                     ->email()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
+                    ->unique('users', 'email', fn ($record) => $record)
+                    ->required(),
+
+                TextInput::make('password')
                     ->password()
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
+                    ->label('Password')
+                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                    ->dehydrated(fn ($state) => filled($state)),
+
+                TextInput::make('phone')
                     ->tel()
-                    ->maxLength(255),
-                Forms\Components\DatePicker::make('date_of_birth'),
-                Forms\Components\Textarea::make('address')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('availability')
-                    ->required()
-                    ->maxLength(50)
-                    ->default('Anytime'),
-                Forms\Components\TextInput::make('skills')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('preferred_roles')
-                    ->maxLength(255),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
-                Forms\Components\TextInput::make('profile_picture')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('languages')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('emergency_contact_name')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('emergency_contact_phone')
+                    ->label('Phone Number')
+                    ->nullable(),
+
+                DatePicker::make('date_of_birth')
+                    ->label('Date of Birth')
+                    ->nullable(),
+
+                Select::make('availability')
+                    ->options([
+                        'Anytime' => 'Anytime',
+                        'Weekdays' => 'Weekdays',
+                        'Weekends' => 'Weekends',
+                        'Evenings' => 'Evenings',
+                    ])
+                    ->default('Anytime')
+                    ->label('Availability'),
+
+                TextInput::make('languages')
+                    ->label('Languages')
+                    ->placeholder('e.g., English, Lithunian')
+                    ->nullable(),
+
+                TextInput::make('emergency_contact_name')
+                    ->label('Emergency Contact Name')
+                    ->nullable(),
+
+                TextInput::make('emergency_contact_phone')
                     ->tel()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('motivation')
-                    ->columnSpanFull(),
+                    ->label('Emergency Contact Phone')
+                    ->nullable(),
+                    FileUpload::make('profile_picture')
+                    ->label('Profile Picture')
+                    ->nullable()
+                    ->columnSpan(2),
+                    Textarea::make('skills')
+                    ->label('Skills')
+                    ->nullable()
+                    ->columnSpan(2),
+
+                Textarea::make('preferred_roles')
+                    ->label('Preferred Roles')
+                    ->nullable()
+                    ->columnSpan(2),
+                    Textarea::make('address')
+                    ->label('Address')
+                    ->rows(3)
+                    ->nullable()
+                    ->columnSpan(2),
+
+                Textarea::make('motivation')
+                    ->label('Motivation')
+                    ->rows(4)
+                    ->nullable()
+                    ->columnSpan(2),
+                    Toggle::make('is_active')
+                    ->default(true)
+                    ->label('Active'),
             ]);
     }
 
-    public static function table(Table $table): Table
+    public static function table(Tables\Table $table): Tables\Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                TextColumn::make('name')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->searchable()
+                    ->label('Name'),
+
+                TextColumn::make('email')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('phone')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('date_of_birth')
+                    ->searchable()
+                    ->label('Email'),
+
+                TextColumn::make('phone')
+                    ->label('Phone'),
+
+                BadgeColumn::make('is_active')
+                    ->label('Active')
+                    ,
+
+                TextColumn::make('availability')
+                    ->label('Availability'),
+
+                TextColumn::make('date_of_birth')
                     ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('availability')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('skills')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('preferred_roles')
-                    ->searchable(),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('profile_picture')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('languages')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('emergency_contact_name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('emergency_contact_phone')
-                    ->searchable(),
-            ])
-            ->filters([
-                //
+                    ->label('Date of Birth'),
+
+                TextColumn::make('preferred_roles')
+                    ->label('Preferred Roles'),
+
+                TextColumn::make('languages')
+                    ->label('Languages'),
+
+                TextColumn::make('emergency_contact_name')
+                    ->label('Emergency Contact'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])->icon('heroicon-o-chevron-down'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->defaultSort('name');
     }
-
     public static function getRelations(): array
     {
         return [

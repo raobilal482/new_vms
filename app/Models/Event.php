@@ -12,6 +12,6 @@ class Event extends Model
     }
 
     public function manager(){
-        return $this->belongsTo("App\Models\User")->where('type', 'Manager');
+        return $this->belongsTo("App\Models\User")->where('type', 'manager');
     }
 }

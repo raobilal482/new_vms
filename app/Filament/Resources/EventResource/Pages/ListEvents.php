@@ -14,6 +14,7 @@ class ListEvents extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\LocaleSwitcher::make('locale'),
         ];
     }
 }
