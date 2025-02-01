@@ -4,6 +4,7 @@ namespace App\Filament\Resources\EventResource\Pages;
 
 use App\Filament\Resources\EventResource;
 use Filament\Actions;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -15,78 +16,105 @@ class ViewEvent extends ViewRecord
 
     public function infolist(Infolist $infolist): Infolist
     {
-        return $infolist
+    return $infolist->schema([
+        Section::make('Event Information')
             ->schema([
-                Section::make("")
-                    ->schema([
-                        Section::make('Event Details')
-                            ->schema([
-                                TextEntry::make('title')
-                                    ->label('Event Title'),
+                TextEntry::make('title')
+                    ->label('Event Title'),
+                TextEntry::make('description')
+                    ->label('Description')
+                    ->markdown()
+                    ->hidden(fn ($record) => empty($record->description)),
+                TextEntry::make('location')
+                    ->label('Location'),
+                TextEntry::make('start_time')
+                    ->label('Start Time')
+                    ->dateTime(),
+                TextEntry::make('end_time')
+                    ->label('End Time')
+                    ->dateTime(),
+                TextEntry::make('max_volunteers')
+                    ->label('Max Volunteers'),
+                TextEntry::make('type')
+                    ->label('Event Type'),
+                TextEntry::make('status')
+                    ->label('Event Status')
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'Upcoming' => 'success',
+                        'Completed' => 'gray',
+                        'Cancelled' => 'danger',
+                    }),
+                TextEntry::make('duration')
+                    ->label('Event Duration')
+                    ->suffix('minutes')
+                    ->hidden(fn ($record) => empty($record->duration)),
+            ])
+            ->columns(2),
 
-                                TextEntry::make('description')
-                                    ->label('Description'),
+Section::make('Manager Information')
+->schema([
+    TextEntry::make('manager.name')->label('Full Name'),
+    TextEntry::make('manager.email')->label('Email Address'),
+    TextEntry::make('manager.phone')->label('Phone Number'),
+    TextEntry::make('manager.availability')->label('Availability'),
+    TextEntry::make('manager.skills')->label('Skills'),
+    TextEntry::make('manager.preferred_roles')->label('Preferred Roles'),
+    TextEntry::make('manager.is_active')
+        ->label('Status')
+        ->formatStateUsing(fn($state) => $state ? 'Active' : 'Inactive')
+        ->badge()
+        ->color(fn ($state) => $state ? 'success' : 'danger'),
+    TextEntry::make('manager.languages')->label('Languages'),
+])
+->columns(2),
 
-                                TextEntry::make('location')
-                                    ->label('Location'),
+Section::make('Volunteer Information')
+->schema([
+    RepeatableEntry::make('volunteers')
+        ->schema([
+            TextEntry::make('name')->label('Full Name'),
+            TextEntry::make('email')->label('Email Address'),
+            TextEntry::make('phone')->label('Phone Number'),
+            TextEntry::make('availability')->label('Availability'),
+            TextEntry::make('skills')->label('Skills'),
+            TextEntry::make('preferred_roles')->label('Preferred Roles'),
+            TextEntry::make('is_active')
+                ->label('Status')
+                ->formatStateUsing(fn($state) => $state ? 'Active' : 'Inactive')
+                ->badge()
+                ->color(fn ($state) => $state ? 'success' : 'danger'),
+            TextEntry::make('languages')->label('Languages'),
+        ])
+        ->columns(3)
+])
+->columns(1),
 
-                                TextEntry::make('start_time')
-                                    ->label('Start Time')
-                                    ->dateTime(),
+        Section::make('Other Information')
+            ->schema([
+                TextEntry::make('contact_email')
+                    ->label('Contact Email')
+                    ->hidden(fn ($record) => empty($record->contact_email)),
+                TextEntry::make('contact_phone')
+                    ->label('Contact Phone')
+                    ->hidden(fn ($record) => empty($record->contact_phone)),
+                TextEntry::make('platform_link')
+                    ->label('Platform Link')
+                    ->hidden(fn ($record) => empty($record->platform_link)),
+                TextEntry::make('requirements')
+                    ->label('Event Requirements')
+                    ->markdown()
+                    ->hidden(fn ($record) => empty($record->requirements)),
+                TextEntry::make('tags')
+                    ->label('Tags')
+                    ->hidden(fn ($record) => empty($record->tags)),
+                TextEntry::make('is_virtual')
+                    ->label('Is Virtual?'),
+            ])
+            ->columns(2),
+    ]);
+}
 
-                                TextEntry::make('end_time')
-                                    ->label('End Time')
-                                    ->dateTime(),
-
-                                TextEntry::make('duration')
-                                    ->label('Duration (Minutes)'),
-
-                                TextEntry::make('status')
-                                    ->label('Status')
-                                    ->colors([
-                                        'primary' => 'Upcoming',
-                                        'success' => 'Completed',
-                                        'danger' => 'Cancelled',
-                                    ])
-                                    ->badge(),
-
-                                TextEntry::make('event_type')
-                                    ->label('Event Type'),
-
-                            ])->columns(2),
-
-                        Section::make("Other Information")
-                            ->schema([
-
-                                TextEntry::make('max_volunteers')
-                                    ->label('Max Volunteers'),
-
-                                TextEntry::make('contact_email')
-                                    ->label('Contact Email'),
-
-                                TextEntry::make('contact_phone')
-                                    ->label('Contact Phone'),
-
-                                TextEntry::make('requirements')
-                                    ->label('Requirements'),
-
-                                TextEntry::make('tags')
-                                    ->label('Tags'),
-
-
-                                TextEntry::make('is_virtual')
-                                    ->label('Is Virtual?'),
-
-                                TextEntry::make('platform_link')
-                                    ->label('Platform Link'),
-
-                                // ListEntry::make('manager.name')
-                                //     ->label('Manager Name'),
-                            ])->columns(2)
-
-                    ])->columns(2)
-            ]);
-    }
     protected function getHeaderActions(): array
     {
         return [

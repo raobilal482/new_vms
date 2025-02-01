@@ -19,7 +19,8 @@ return new class extends Migration {
             $table->unsignedInteger('max_volunteers'); // Maximum number of volunteers
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Admin ID (foreign key to Users table)
             $table->foreignId('manager_id')->nullable()->constrained('users')->onDelete('set null'); // Manager ID (foreign key to Users table)
-            $table->string('event_type')->default('General'); // Type of event (e.g., General, Fundraiser, Workshop)
+            $table->foreignId('volunteer_id')->nullable()->constrained('users')->onDelete('set null'); // Manager ID (foreign key to Users table)
+            $table->string('type')->default('General'); // Type of event (e.g., General, Fundraiser, Workshop)
             $table->boolean('is_virtual')->default(false); // Whether the event is virtual
             $table->string('platform_link')->nullable(); // Virtual platform link (if applicable)
             $table->text('requirements')->nullable(); // Event-specific requirements

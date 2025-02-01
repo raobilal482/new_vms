@@ -17,29 +17,26 @@ class ViewUser extends ViewRecord
         return $infolist
             ->schema([
                 Section::make()
-                ->schema([
+                    ->schema([
 
-                    TextEntry::make('name')->label('Full Name'),
-                    TextEntry::make('email')->label('Email Address'),
-                TextEntry::make('phone')->label('Phone Number'),
-                TextEntry::make('date_of_birth')->label('Date of Birth')->date(),
-                TextEntry::make('address')->label('Address'),
-                TextEntry::make('availability')->label('Availability'),
-                TextEntry::make('skills')->label('Skills'),
-                TextEntry::make('preferred_roles')->label('Preferred Roles'),
-                TextEntry::make('is_active')
-                ->label('Active')
-                    ->colors([
-                        'success' => true,
-                        'danger' => false,
-                    ])
-                    ->formatStateUsing(fn ($state) => $state ? 'Active' : 'Inactive')
-                    ->badge(),
-                    TextEntry::make('languages')->label('Languages'),
-                    TextEntry::make('emergency_contact_name')->label('Emergency Contact Name'),
-                TextEntry::make('emergency_contact_phone')->label('Emergency Contact Phone'),
-                TextEntry::make('motivation')->label('Motivation'),
-                ])->columns(2)
+                        TextEntry::make('name')->label('Full Name'),
+                        TextEntry::make('email')->label('Email Address'),
+                        TextEntry::make('phone')->label('Phone Number'),
+                        TextEntry::make('date_of_birth')->label('Date of Birth')->date(),
+                        TextEntry::make('address')->label('Address'),
+                        TextEntry::make('availability')->label('Availability'),
+                        TextEntry::make('skills')->label('Skills'),
+                        TextEntry::make('preferred_roles')->label('Preferred Roles'),
+                        TextEntry::make('is_active')
+                            ->label('Status')
+                            ->formatStateUsing(fn($state) => $state ? 'Active' : 'Inactive')
+                            ->badge()
+                            ->color(fn ($state) => $state ? 'success' : 'danger' ),
+                        TextEntry::make('languages')->label('Languages'),
+                        TextEntry::make('emergency_contact_name')->label('Emergency Contact Name'),
+                        TextEntry::make('emergency_contact_phone')->label('Emergency Contact Phone'),
+                        TextEntry::make('motivation')->label('Motivation'),
+                    ])->columns(3)
             ]);
     }
     protected function getHeaderActions(): array

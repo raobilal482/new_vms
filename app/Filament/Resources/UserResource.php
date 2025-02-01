@@ -8,6 +8,7 @@ use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -29,10 +30,12 @@ class UserResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-s-user-group';
 
     public static function form(Forms\Form $form): Forms\Form
-    {
-        return $form
-            ->schema([
-                TextInput::make('name')
+{
+    return $form
+        ->schema([
+            Section::make()
+                ->schema([
+                    TextInput::make('name')
                     ->required()
                     ->label('Full Name'),
 
@@ -47,6 +50,15 @@ class UserResource extends Resource
                     ->label('Password')
                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state)),
+
+                Select::make('type')
+                    ->options([
+                        'Admin' => 'Admin',
+                        'Volunteer' => 'Volunteer',
+                        'Manager' => 'Manager',
+                    ])
+                    ->label('User Type')
+                    ->nullable(),
 
                 TextInput::make('phone')
                     ->tel()
@@ -69,7 +81,7 @@ class UserResource extends Resource
 
                 TextInput::make('languages')
                     ->label('Languages')
-                    ->placeholder('e.g., English, Lithunian')
+                    ->placeholder('e.g., English, Spanish, French')
                     ->nullable(),
 
                 TextInput::make('emergency_contact_name')
@@ -80,11 +92,13 @@ class UserResource extends Resource
                     ->tel()
                     ->label('Emergency Contact Phone')
                     ->nullable(),
-                    FileUpload::make('profile_picture')
+
+                FileUpload::make('profile_picture')
                     ->label('Profile Picture')
                     ->nullable()
                     ->columnSpan(2),
-                    Textarea::make('skills')
+
+                Textarea::make('skills')
                     ->label('Skills')
                     ->nullable()
                     ->columnSpan(2),
@@ -93,7 +107,8 @@ class UserResource extends Resource
                     ->label('Preferred Roles')
                     ->nullable()
                     ->columnSpan(2),
-                    Textarea::make('address')
+
+                Textarea::make('address')
                     ->label('Address')
                     ->rows(3)
                     ->nullable()
@@ -104,16 +119,21 @@ class UserResource extends Resource
                     ->rows(4)
                     ->nullable()
                     ->columnSpan(2),
-                    Toggle::make('is_active')
+
+                Toggle::make('is_active')
                     ->default(true)
                     ->label('Active'),
-            ]);
-    }
+                ])->columns(2),
+        ]);
+}
+
 
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                ->label('Ref'),
                 TextColumn::make('name')
                     ->sortable()
                     ->searchable()
@@ -128,8 +148,11 @@ class UserResource extends Resource
                     ->label('Phone'),
 
                 BadgeColumn::make('is_active')
-                    ->label('Active')
-                    ,
+                    ->label('Status')
+                    ->formatStateUsing(fn ($state) => $state ? 'Active' : 'De-Active'  )
+                    ->color(fn ($state) => $state ? 'success' : 'danger'),
+
+                TextColumn::make('type'),
 
                 TextColumn::make('availability')
                     ->label('Availability'),
@@ -154,7 +177,7 @@ class UserResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                 ])->icon('heroicon-o-chevron-down'),
             ])
-            ->defaultSort('name');
+            ->defaultSort('id','desc');
     }
     public static function getRelations(): array
     {

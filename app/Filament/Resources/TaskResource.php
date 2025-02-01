@@ -6,6 +6,8 @@ use App\Filament\Resources\TaskResource\Pages;
 use App\Filament\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -17,14 +19,40 @@ class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Tasks';
+    // protected static ?string $navigationIcon = 'heroicon-s-clipboard-list';
+    protected static ?string $navigationGroup = 'Event Management';
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                //
-            ]);
+        return $form->schema([
+            TextInput::make('description')
+                ->label('Task Description')
+                ->required()
+                ->maxLength(255),
+
+            Select::make('status')
+                ->label('Task Status')
+                ->options([
+                    'assigned' => 'Assigned',
+                    'in progress' => 'In Progress',
+                    'completed' => 'Completed',
+                ])
+                ->default('assigned')
+                ->required(),
+
+            Select::make('event_id')
+                ->label('Event')
+                ->relationship('events', 'title')
+                ->required(),
+
+            // Multi-select for volunteers (many-to-many relation)
+            Select::make('volunteers')
+                ->label('Assigned Volunteers')
+                ->multiple()
+                ->relationship('volunteers', 'name')
+                ->required(),
+        ]);
     }
 
     public static function table(Table $table): Table

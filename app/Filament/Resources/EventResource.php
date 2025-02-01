@@ -24,13 +24,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EventResource extends Resource
 {
-    use Translatable;
     protected static ?string $model = Event::class;
-    public static function getTranslatableLocales(): array
-    {
-        return ['en', 'lt'];
-    }
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static ?string $navigationIcon = 'heroicon-s-calendar';
     protected static ?string $navigationLabel = 'Events';
     protected static ?string $pluralLabel = 'Events';
     protected static ?string $slug = 'events';
@@ -62,7 +57,7 @@ class EventResource extends Resource
                         ->label('Max Volunteers')
                         ->numeric()
                         ->required(),
-                    Select::make('event_type')
+                    Select::make('type')
                         ->label('Event Type')
                         ->options([
                             'General' => 'General',
@@ -85,6 +80,13 @@ class EventResource extends Resource
                         ->label('Manager')
                         ->relationship('manager', 'name')
                         ->nullable(),
+                    Select::make('volunteer_id')
+                        ->label('Volunteer')
+                        ->relationship('volunteers', 'name')
+                        ->nullable()
+                        ->multiple()
+                        ->searchable()
+                        ->preload(),
                     Checkbox::make('is_virtual')
                         ->label('Is Virtual?'),
                     TextInput::make('platform_link')
@@ -144,7 +146,7 @@ class EventResource extends Resource
                 Tables\Columns\TextColumn::make('max_volunteers')
                     ->label('Max Volunteers'),
 
-                Tables\Columns\TextColumn::make('event_type')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Event Type'),
 
                 Tables\Columns\BooleanColumn::make('is_virtual')
@@ -179,7 +181,7 @@ class EventResource extends Resource
                 ->icon('heroicon-o-chevron-down'),
             ])
             ->headerActions([
-                Tables\Actions\LocaleSwitcher::make()
+
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

@@ -13,7 +13,18 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('event_id')->constrained()->onDelete('cascade'); // Foreign key to event
+            $table->text('description'); // Description of the task
+            $table->string('status')->default('assigned'); // Task status as a string (assigned, in progress, completed)
+            $table->timestamps(); // Created at and updated at
+        });
+
+        // Create pivot table for many-to-many relationship
+        Schema::create('task_volunteer', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('task_id')->constrained()->onDelete('cascade'); // Foreign key to task
+            $table->foreignId('volunteer_id')->constrained('users')->onDelete('cascade'); // Foreign key to user (volunteer)
+            $table->timestamps(); // Created at and updated at
         });
     }
 
