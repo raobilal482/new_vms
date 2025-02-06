@@ -52,6 +52,23 @@ class ViewEvent extends ViewRecord
             ])
             ->columns(2),
 
+Section::make('Event Organizer Information')
+->schema([
+    TextEntry::make('event_organizer.name')->label('Full Name'),
+    TextEntry::make('event_organizer.email')->label('Email Address'),
+    TextEntry::make('event_organizer.phone')->label('Phone Number'),
+    TextEntry::make('event_organizer.availability')->label('Availability'),
+    TextEntry::make('event_organizer.skills')->label('Skills'),
+    TextEntry::make('event_organizer.preferred_roles')->label('Preferred Roles'),
+    TextEntry::make('event_organizer.is_active')
+        ->label('Status')
+        ->formatStateUsing(fn($state) => $state ? 'Active' : 'Inactive')
+        ->badge()
+        ->color(fn ($state) => $state ? 'success' : 'danger'),
+    TextEntry::make('event_organizer.languages')->label('Languages'),
+])
+->columns(2),
+
 Section::make('Manager Information')
 ->schema([
     TextEntry::make('manager.name')->label('Full Name'),

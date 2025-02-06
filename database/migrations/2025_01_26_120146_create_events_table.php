@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->timestamp('end_time'); // Event end time
             $table->unsignedInteger('max_volunteers'); // Maximum number of volunteers
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Admin ID (foreign key to Users table)
+            $table->foreignId('event_organizer_id')->nullable()->constrained('users')->onDelete('set null'); // Manager ID (foreign key to Users table)
             $table->foreignId('manager_id')->nullable()->constrained('users')->onDelete('set null'); // Manager ID (foreign key to Users table)
             $table->foreignId('volunteer_id')->nullable()->constrained('users')->onDelete('set null'); // Manager ID (foreign key to Users table)
             $table->string('type')->default('General'); // Type of event (e.g., General, Fundraiser, Workshop)

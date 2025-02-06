@@ -76,6 +76,10 @@ class EventResource extends Resource
                         ->default('Upcoming')
                         ->required(),
                     // Second Column
+                    Select::make('event_organizer_id')
+                        ->label('Event Organizer')
+                        ->relationship('event_organizer', 'name')
+                        ->nullable(),
                     Select::make('manager_id')
                         ->label('Manager')
                         ->relationship('manager', 'name')

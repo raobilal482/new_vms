@@ -56,6 +56,7 @@ class UserResource extends Resource
                         'Admin' => 'Admin',
                         'Volunteer' => 'Volunteer',
                         'Manager' => 'Manager',
+                        'Event Organizer' => 'Event Organizer',
                     ])
                     ->label('User Type')
                     ->nullable(),

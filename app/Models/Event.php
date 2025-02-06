@@ -14,5 +14,8 @@ class Event extends Model
         return $this->belongsToMany(User::class, 'event_volunteer', 'event_id', 'user_id')
             ->where('users.type', 'volunteer');
     }
+    public function event_organizer(){
+        return $this->belongsTo("App\Models\User")->where('type', 'event organizer');
+    }
 
 }

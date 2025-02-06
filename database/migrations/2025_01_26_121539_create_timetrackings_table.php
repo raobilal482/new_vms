@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('timetrackings', function (Blueprint $table) {
+        Schema::create('time_trackings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('volunteer_id')->constrained('users')->onDelete('cascade'); // Foreign key to users (volunteers)
             $table->foreignId('event_id')->nullable()->constrained('events')->onDelete('cascade'); // Foreign key to events

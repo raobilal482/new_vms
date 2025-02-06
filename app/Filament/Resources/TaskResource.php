@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -20,9 +21,7 @@ class TaskResource extends Resource
     protected static ?string $model = Task::class;
 
     protected static ?string $navigationLabel = 'Tasks';
-    // protected static ?string $navigationIcon = 'heroicon-s-clipboard-list';
-    protected static ?string $navigationGroup = 'Event Management';
-
+    protected static ?string $navigationIcon = 'heroicon-s-calendar';
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -43,15 +42,17 @@ class TaskResource extends Resource
 
             Select::make('event_id')
                 ->label('Event')
-                ->relationship('events', 'title')
+                ->relationship('event', 'title')
                 ->required(),
 
             // Multi-select for volunteers (many-to-many relation)
             Select::make('volunteers')
-                ->label('Assigned Volunteers')
+                ->label('Assign Volunteers')
+                ->searchable()
                 ->multiple()
                 ->relationship('volunteers', 'name')
-                ->required(),
+                ->required()
+                ->preload(),
         ]);
     }
 
@@ -59,10 +60,40 @@ class TaskResource extends Resource
     {
         return $table
             ->columns([
-                //
+                // Display the task description
+                TextColumn::make('description')
+                    ->label('Task Description')
+                    ->searchable()
+                    ->sortable(),
+
+                // Display the task status with a human-readable label
+                TextColumn::make('status')
+                    ->label('Task Status')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'assigned' => 'Assigned',
+                        'in progress' => 'In Progress',
+                        'completed' => 'Completed',
+                    })
+                    ->sortable()
+                    ->badge()
+                    ,
+
+                // Display the related event's title
+                TextColumn::make('event.title')
+                    ->label('Event')
+                    ->searchable()
+                    ->sortable(),
+
+                // Display the names of assigned volunteers (many-to-many relationship)
+                TextColumn::make('volunteers.name')
+                    ->label('Assigned Volunteers')
+                    ->listWithLineBreaks()
+                    ->bulleted()
+                    ->limitList(3) // Limit the number of volunteers displayed in the table
+                    ->expandableLimitedList(), // Allow expanding the list if there are more volunteers
             ])
             ->filters([
-                //
+                // Add filters here if needed
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

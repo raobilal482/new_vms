@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
-    public function events()
+    public function event()
     {
         return $this->belongsTo(Event::class);
     }
