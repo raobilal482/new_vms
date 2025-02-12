@@ -6,6 +6,7 @@ use App\Filament\Resources\TaskResource\Pages;
 use App\Filament\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -25,12 +26,21 @@ class TaskResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('description')
+            Section::make()
+            ->schema([
+
+
+                TextInput::make('title')
+                ->label('Task Title')
+                ->required()
+                ->maxLength(255),
+
+                TextInput::make('description')
                 ->label('Task Description')
                 ->required()
                 ->maxLength(255),
 
-            Select::make('status')
+                Select::make('status')
                 ->label('Task Status')
                 ->options([
                     'assigned' => 'Assigned',
@@ -41,30 +51,38 @@ class TaskResource extends Resource
                 ->required(),
 
             Select::make('event_id')
-                ->label('Event')
-                ->relationship('event', 'title')
+            ->label('Event')
+            ->relationship('event', 'title')
                 ->required(),
 
-            // Multi-select for volunteers (many-to-many relation)
-            Select::make('volunteers')
+                // Multi-select for volunteers (many-to-many relation)
+                Select::make('volunteers')
                 ->label('Assign Volunteers')
                 ->searchable()
                 ->multiple()
                 ->relationship('volunteers', 'name')
                 ->required()
                 ->preload(),
-        ]);
+        ])->columns(2),
+    ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
+        ->columns([
                 // Display the task description
+
+                TextColumn::make('title')
+                ->label('Task Title')
+                ->searchable()
+                ->sortable(),
+
                 TextColumn::make('description')
-                    ->label('Task Description')
-                    ->searchable()
-                    ->sortable(),
+                ->label('Task Description')
+                ->searchable()
+                ->sortable(),
+
 
                 // Display the task status with a human-readable label
                 TextColumn::make('status')

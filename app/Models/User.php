@@ -43,5 +43,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function totalEventHours()
+{
+    return $this->hasMany(TimeTracking::class)
+        ->selectRaw('SUM(TIMESTAMPDIFF(HOUR, checkin_time, checkout_time)) as total_hours')
+        ->pluck('total_hours')
+        ->first() ?? 0;
+}
+public function totalTaskHours()
+{
+    return TimeTracking::whereIn('event_id', $this->events()->pluck('id'))
+        ->sum('hours_logged');
+}
 
 }

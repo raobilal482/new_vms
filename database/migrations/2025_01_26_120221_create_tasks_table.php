@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('event_id')->constrained()->onDelete('cascade'); // Foreign key to event
+            $table->foreignId('event_id')->constrained()->onDelete('cascade');
+            $table->string('title');
             $table->text('description');
             $table->string('status')->default('assigned');
-            $table->timestamps(); 
+            $table->timestamps();
         });
 
         // Create pivot table for many-to-many relationship

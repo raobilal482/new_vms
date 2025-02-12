@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('time_trackings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('volunteer_id')->constrained('users')->onDelete('cascade'); // Foreign key to users (volunteers)
-            $table->foreignId('event_id')->nullable()->constrained('events')->onDelete('cascade'); // Foreign key to events
+            $table->foreignId('volunteer_id')->constrained('users')->onDelete('cascade')->nullable(); // Foreign key to users (volunteers)
+            $table->foreignId('task_id')->nullable()->constrained('tasks')->onDelete('cascade'); // Foreign key to events
             $table->timestamp('checkin_time')->nullable(); // Check-in time
             $table->timestamp('checkout_time')->nullable(); // Check-out time
             $table->unsignedBigInteger('hours_logged')->nullable(); // Total hours logged
