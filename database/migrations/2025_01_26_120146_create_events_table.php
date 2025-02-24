@@ -16,6 +16,8 @@ return new class extends Migration {
             $table->string('location'); // Event location
             $table->timestamp('start_time'); // Event start time
             $table->timestamp('end_time'); // Event end time
+            $table->string('is_approved')->default('Pending');
+            $table->string('rejection_reason')->nullable();
             $table->unsignedInteger('max_volunteers'); // Maximum number of volunteers
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Admin ID (foreign key to Users table)
             $table->foreignId('event_organizer_id')->nullable()->constrained('users')->onDelete('set null'); // Manager ID (foreign key to Users table)
