@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
@@ -35,7 +36,6 @@ class EventResource extends Resource
         return $form->schema([
             Forms\Components\Section::make('Event Details')
                 ->schema([
-                    // First Column
                     TextInput::make('title')
                         ->label('Event Title')
                         ->required()
@@ -75,7 +75,6 @@ class EventResource extends Resource
                         ])
                         ->default('Upcoming')
                         ->required(),
-                    // Second Column
                     Select::make('event_organizer_id')
                         ->label('Event Organizer')
                         ->relationship('event_organizer', 'name')
@@ -114,12 +113,20 @@ class EventResource extends Resource
                         ->label('Event Duration (in minutes)')
                         ->numeric()
                         ->nullable(),
+                    // Optional: If you want to show is_approved in the form (hidden by default)
+                    // Select::make('is_approved')
+                    //     ->label('Approval Status')
+                    //     ->options([
+                    //         'Pending' => 'Pending',
+                    //         'Approved' => 'Approved',
+                    //         'Rejected' => 'Rejected',
+                    //     ])
+                    //     ->default('Pending')
+                    //     ->disabled(), // Prevents manual editing
                 ])
                 ->columns(2),
         ]);
     }
-
-
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
@@ -129,41 +136,42 @@ class EventResource extends Resource
                     ->searchable()
                     ->label('Event Title')
                     ->wrap(),
-
                 Tables\Columns\TextColumn::make('description')
                     ->limit(50)
                     ->label('Description')
                     ->wrap(),
-
                 Tables\Columns\TextColumn::make('location')
                     ->label('Location')
                     ->wrap(),
-
                 Tables\Columns\TextColumn::make('start_time')
                     ->dateTime('M d, Y H:i')
                     ->label('Start Time'),
-
                 Tables\Columns\TextColumn::make('end_time')
                     ->dateTime('M d, Y H:i')
                     ->label('End Time'),
-
                 Tables\Columns\TextColumn::make('max_volunteers')
                     ->label('Max Volunteers'),
-
                 Tables\Columns\TextColumn::make('type')
                     ->label('Event Type'),
-
                 Tables\Columns\BooleanColumn::make('is_virtual')
                     ->label('Is Virtual'),
-
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status'),
-
                 Tables\Columns\TextColumn::make('duration')
                     ->label('Duration (min)'),
-
                 Tables\Columns\TextColumn::make('tags')
                     ->label('Tags'),
+                    Tables\Columns\TextColumn::make('is_approved')
+                    ->label('Approval Status')
+                    ->formatStateUsing(fn ($state) => $state ?? 'Pending') // Display "Pending" if NULL or empty
+                    ->default('Pending')
+                    ->badge()
+                    ->color(fn ($state) => match ($state ?? 'Pending') {
+                        'Pending' => 'warning',
+                        'Approved' => 'success',
+                        'Rejected' => 'danger',
+                        default => 'gray',
+                    }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -176,17 +184,55 @@ class EventResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('manage_approval')
+                        ->label('Manage Approval')
+                        ->icon('heroicon-o-check-circle')
+                        ->visible(fn (Event $record) => auth()->user()->type === 'Admin' && $record->is_approved !== 'Approved') // Hide if Approved
+                        ->form([
+                            Select::make('action')
+                                ->label('Action')
+                                ->options([
+                                    'approve' => 'Approve',
+                                    'reject' => 'Reject',
+                                ])
+                                ->required()
+                                ->live(), // Real-time updates for conditional fields
+                            Textarea::make('reason')
+                                ->label('Reason (Required for Reject)')
+                                ->required(fn ($get) => $get('action') === 'reject') // Required only for reject
+                                ->hidden(fn ($get) => $get('action') === 'approve' || !$get('action')) // Hidden for approve
+                                ->maxLength(500),
+                        ])
+                        ->action(function (Event $record, array $data) {
+                            if ($data['action'] === 'approve') {
+                                $record->update(['is_approved' => 'Approved']);
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Event Approved')
+                                    ->success()
+                                    ->send();
+                            } elseif ($data['action'] === 'reject') {
+                                $record->update([
+                                    'is_approved' => 'Rejected',
+                                    'rejection_reason' => $data['reason'],
+                                ]);
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Event Rejected')
+                                    ->body('Reason: ' . $data['reason'])
+                                    ->warning()
+                                    ->send();
+                            }
+                        })
+                        ->modalHeading('Manage Event Approval')
+                        ->modalSubmitActionLabel('Confirm')
+                        ->modalWidth('sm'),
                 ])
-                ->label('Actions') // This is the label for the dropdown button
+                ->label('Actions')
                 ->icon('heroicon-o-chevron-down'),
             ])
-            ->headerActions([
-
-            ])
+            ->headerActions([])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);

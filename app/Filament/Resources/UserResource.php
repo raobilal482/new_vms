@@ -22,6 +22,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class UserResource extends Resource
 {
@@ -30,104 +31,120 @@ class UserResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-s-user-group';
 
     public static function form(Forms\Form $form): Forms\Form
-{
-    return $form
-        ->schema([
-            Section::make()
-                ->schema([
-                    TextInput::make('name')
-                    ->required()
-                    ->label('Full Name'),
+    {
+        return $form
+            ->schema([
+                Section::make()
+                    ->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->label('Full Name'),
 
-                TextInput::make('email')
-                    ->email()
-                    ->unique('users', 'email', fn ($record) => $record)
-                    ->required(),
+                        TextInput::make('email')
+                            ->email()
+                            ->unique('users', 'email', fn ($record) => $record)
+                            ->required(),
 
-                TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->label('Password')
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                    ->dehydrated(fn ($state) => filled($state)),
+                        TextInput::make('password')
+                            ->password()
+                            ->required()
+                            ->label('Password')
+                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                            ->dehydrated(fn ($state) => filled($state)),
 
-                Select::make('type')
-                    ->options([
-                        'Admin' => 'Admin',
-                        'Volunteer' => 'Volunteer',
-                        'Manager' => 'Manager',
-                        'Event Organizer' => 'Event Organizer',
-                    ])
-                    ->label('User Type')
-                    ->nullable(),
+                        Select::make('type')
+                            ->options([
+                                'Admin' => 'Admin',
+                                'Volunteer' => 'Volunteer',
+                                'Manager' => 'Manager',
+                                'Event Organizer' => 'Event Organizer',
+                            ])
+                            ->label('User Type')
+                            ->nullable()
+                            ->live() // Ensures real-time updates
+                            ->required(),
 
-                TextInput::make('phone')
-                    ->tel()
-                    ->label('Phone Number')
-                    ->nullable(),
+                            PhoneInput::make('phone')
+                            ->validateFor('AUTO')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($livewire, $component) {
+                                $livewire->validateOnly($component->getStatePath());
+                            })
+                            ->initialCountry('US') // Corrected to uppercase
+                            ->label('Phone')
+                            ->formatOnDisplay(true)
+                            ->placeholderNumberType('FIXED_LINE')
+                            ->strictMode(),
 
-                DatePicker::make('date_of_birth')
-                    ->label('Date of Birth')
-                    ->nullable(),
+                        DatePicker::make('date_of_birth')
+                            ->label('Date of Birth')
+                            ->nullable()
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                Select::make('availability')
-                    ->options([
-                        'Anytime' => 'Anytime',
-                        'Weekdays' => 'Weekdays',
-                        'Weekends' => 'Weekends',
-                        'Evenings' => 'Evenings',
-                    ])
-                    ->default('Anytime')
-                    ->label('Availability'),
+                        Select::make('availability')
+                            ->options([
+                                'Anytime' => 'Anytime',
+                                'Weekdays' => 'Weekdays',
+                                'Weekends' => 'Weekends',
+                                'Evenings' => 'Evenings',
+                            ])
+                            ->default('Anytime')
+                            ->label('Availability'),
 
-                TextInput::make('languages')
-                    ->label('Languages')
-                    ->placeholder('e.g., English, Spanish, French')
-                    ->nullable(),
+                        TextInput::make('languages')
+                            ->label('Languages')
+                            ->placeholder('e.g., English, Spanish, French')
+                            ->nullable(),
 
-                TextInput::make('emergency_contact_name')
-                    ->label('Emergency Contact Name')
-                    ->nullable(),
+                        TextInput::make('emergency_contact_name')
+                            ->label('Emergency Contact Name')
+                            ->nullable()
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                TextInput::make('emergency_contact_phone')
-                    ->tel()
-                    ->label('Emergency Contact Phone')
-                    ->nullable(),
+                        TextInput::make('emergency_contact_phone')
+                            ->tel()
+                            ->label('Emergency Contact Phone')
+                            ->nullable()
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                FileUpload::make('profile_picture')
-                    ->label('Profile Picture')
-                    ->nullable()
-                    ->columnSpan(2),
+                        FileUpload::make('profile_picture')
+                            ->label('Profile Picture')
+                            ->nullable()
+                            ->columnSpan(2)
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                Textarea::make('skills')
-                    ->label('Skills')
-                    ->nullable()
-                    ->columnSpan(2),
+                        Textarea::make('skills')
+                            ->label('Skills')
+                            ->nullable()
+                            ->columnSpan(2)
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                Textarea::make('preferred_roles')
-                    ->label('Preferred Roles')
-                    ->nullable()
-                    ->columnSpan(2),
+                        Textarea::make('preferred_roles')
+                            ->label('Preferred Roles')
+                            ->nullable()
+                            ->columnSpan(2)
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                Textarea::make('address')
-                    ->label('Address')
-                    ->rows(3)
-                    ->nullable()
-                    ->columnSpan(2),
+                        Textarea::make('address')
+                            ->label('Address')
+                            ->rows(3)
+                            ->nullable()
+                            ->columnSpan(2)
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                Textarea::make('motivation')
-                    ->label('Motivation')
-                    ->rows(4)
-                    ->nullable()
-                    ->columnSpan(2),
+                        Textarea::make('motivation')
+                            ->label('Motivation')
+                            ->rows(4)
+                            ->nullable()
+                            ->columnSpan(2)
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
 
-                Toggle::make('is_active')
-                    ->default(true)
-                    ->label('Active'),
-                ])->columns(2),
-        ]);
-}
-
+                        Toggle::make('is_active')
+                            ->default(true)
+                            ->label('Active'),
+                    ])->columns(2),
+            ]);
+    }
 
     public static function table(Tables\Table $table): Tables\Table
     {

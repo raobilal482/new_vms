@@ -21,7 +21,7 @@ return new class extends Migration {
 
             // Additional fields
             $table->string('phone')->nullable(); // Phone number
-            
+            $table->string('status')->nullable(); // Phone number
             $table->date('date_of_birth')->nullable(); // Date of birth
             $table->text('address')->nullable(); // Address (JSON format)
             $table->string('availability', 50)->default('Anytime'); // Availability

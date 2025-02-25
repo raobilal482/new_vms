@@ -18,24 +18,38 @@ class ViewUser extends ViewRecord
             ->schema([
                 Section::make()
                     ->schema([
-
                         TextEntry::make('name')->label('Full Name'),
                         TextEntry::make('email')->label('Email Address'),
                         TextEntry::make('phone')->label('Phone Number'),
-                        TextEntry::make('date_of_birth')->label('Date of Birth')->date(),
-                        TextEntry::make('address')->label('Address'),
+                        TextEntry::make('date_of_birth')
+                            ->label('Date of Birth')
+                            ->date()
+                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                        TextEntry::make('address')
+                            ->label('Address')
+                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
                         TextEntry::make('availability')->label('Availability'),
-                        TextEntry::make('skills')->label('Skills'),
-                        TextEntry::make('preferred_roles')->label('Preferred Roles'),
+                        TextEntry::make('skills')
+                            ->label('Skills')
+                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                        TextEntry::make('preferred_roles')
+                            ->label('Preferred Roles')
+                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
                         TextEntry::make('is_active')
                             ->label('Status')
-                            ->formatStateUsing(fn($state) => $state ? 'Active' : 'Inactive')
+                            ->formatStateUsing(fn ($state) => $state ? 'Active' : 'Inactive')
                             ->badge()
-                            ->color(fn ($state) => $state ? 'success' : 'danger' ),
+                            ->color(fn ($state) => $state ? 'success' : 'danger'),
                         TextEntry::make('languages')->label('Languages'),
-                        TextEntry::make('emergency_contact_name')->label('Emergency Contact Name'),
-                        TextEntry::make('emergency_contact_phone')->label('Emergency Contact Phone'),
-                        TextEntry::make('motivation')->label('Motivation'),
+                        TextEntry::make('emergency_contact_name')
+                            ->label('Emergency Contact Name')
+                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                        TextEntry::make('emergency_contact_phone')
+                            ->label('Emergency Contact Phone')
+                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                        TextEntry::make('motivation')
+                            ->label('Motivation')
+                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
                     ])->columns(3)
             ]);
     }
