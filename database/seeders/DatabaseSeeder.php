@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,13 +14,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(PermissionsSeeder::class);
+        $adminUser = User::firstOrCreate(
+            ['email' => 'test@vms.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+                'type' => 'Admin',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@vms.com',
-            'password' => bcrypt('password'),
-            'type' => 'Admin',
-        ]);
+        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+
+        $permissions = Permission::all();
+        $adminRole->syncPermissions($permissions);
+
+        $adminUser->assignRole($adminRole);
     }
 }

@@ -22,6 +22,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role; // Import Role model
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class UserResource extends Resource
@@ -34,7 +35,7 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Section::make()
+                Section::make('User Information')
                     ->schema([
                         TextInput::make('name')
                             ->required()
@@ -64,13 +65,13 @@ class UserResource extends Resource
                             ->live() // Ensures real-time updates
                             ->required(),
 
-                            PhoneInput::make('phone')
+                        PhoneInput::make('phone')
                             ->validateFor('AUTO')
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($livewire, $component) {
                                 $livewire->validateOnly($component->getStatePath());
                             })
-                            ->initialCountry('US') // Corrected to uppercase
+                            ->initialCountry('US')
                             ->label('Phone')
                             ->formatOnDisplay(true)
                             ->placeholderNumberType('FIXED_LINE')
@@ -79,7 +80,7 @@ class UserResource extends Resource
                         DatePicker::make('date_of_birth')
                             ->label('Date of Birth')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         Select::make('availability')
                             ->options([
@@ -99,50 +100,74 @@ class UserResource extends Resource
                         TextInput::make('emergency_contact_name')
                             ->label('Emergency Contact Name')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         TextInput::make('emergency_contact_phone')
                             ->tel()
                             ->label('Emergency Contact Phone')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         FileUpload::make('profile_picture')
                             ->label('Profile Picture')
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         Textarea::make('skills')
                             ->label('Skills')
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         Textarea::make('preferred_roles')
                             ->label('Preferred Roles')
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         Textarea::make('address')
                             ->label('Address')
                             ->rows(3)
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         Textarea::make('motivation')
                             ->label('Motivation')
                             ->rows(4)
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
 
                         Toggle::make('is_active')
                             ->default(true)
                             ->label('Active'),
-                    ])->columns(2),
+                    ])
+                    ->columns(2),
+
+                // New Roles Section
+                Section::make('Role Assignment')
+                    ->schema([
+                        Select::make('roles')
+                            ->label('Assign Roles')
+                            ->multiple() // Allow multiple roles
+                            ->options(function () {
+                                return Role::all()->pluck('name', 'name')->toArray();
+                            })
+                            ->preload() // Preload options for better UX
+                            ->default(fn ($record) => $record ? $record->roles->pluck('name')->toArray() : [])
+                            ->afterStateUpdated(function ($state, $record) {
+                                if ($record) {
+                                    $record->syncRoles($state);
+                                }
+                            })
+                            ->dehydrated(false) // Prevent storing in the main form state
+                            ->saveRelationshipsUsing(function ($record, $state) {
+                                $record->syncRoles($state);
+                            }),
+                    ])
+                    ->collapsible(),
             ]);
     }
 
@@ -151,42 +176,38 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')
-                ->label('Ref'),
+                    ->label('Ref'),
                 TextColumn::make('name')
                     ->sortable()
                     ->searchable()
                     ->label('Name'),
-
                 TextColumn::make('email')
                     ->sortable()
                     ->searchable()
                     ->label('Email'),
-
                 TextColumn::make('phone')
                     ->label('Phone'),
-
                 BadgeColumn::make('is_active')
                     ->label('Status')
-                    ->formatStateUsing(fn ($state) => $state ? 'Active' : 'De-Active'  )
+                    ->formatStateUsing(fn ($state) => $state ? 'Active' : 'De-Active')
                     ->color(fn ($state) => $state ? 'success' : 'danger'),
-
                 TextColumn::make('type'),
-
                 TextColumn::make('availability')
                     ->label('Availability'),
-
                 TextColumn::make('date_of_birth')
                     ->date()
                     ->label('Date of Birth'),
-
                 TextColumn::make('preferred_roles')
                     ->label('Preferred Roles'),
-
                 TextColumn::make('languages')
                     ->label('Languages'),
-
                 TextColumn::make('emergency_contact_name')
                     ->label('Emergency Contact'),
+                // Optional: Display roles in the table
+                TextColumn::make('roles.name')
+                    ->label('Roles')
+                    ->listWithLineBreaks()
+                    ->limitList(3),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -195,12 +216,13 @@ class UserResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                 ])->icon('heroicon-o-chevron-down'),
             ])
-            ->defaultSort('id','desc');
+            ->defaultSort('id', 'desc');
     }
+
     public static function getRelations(): array
     {
         return [
-            //
+            // You could add a RelationManager for roles here if preferred
         ];
     }
 
