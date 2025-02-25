@@ -2,6 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Register as AuthRegister;
+use App\Filament\Pages\CustomRegister;
+use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\Register;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -42,6 +46,9 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
+            ->pages([
+                Dashboard::class
+            ])
             ->plugin(
                 SpatieLaravelTranslatablePlugin::make()
                 ->defaultLocales(['en', 'lt', 'ru'])
@@ -57,6 +64,8 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+
+            ->registration(AuthRegister::class)
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label(fn (): string => __('navigation.settings'))
