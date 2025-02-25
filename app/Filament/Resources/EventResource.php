@@ -130,6 +130,20 @@ class EventResource extends Resource
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
+        ->modifyQueryUsing(function (Builder $query) {
+            $user = auth()->user();
+            if ($user->type === 'Admin' || $user->hasRole('Admin')) {
+                return $query;
+            }
+            return $query->where(function (Builder $query) use ($user) {
+                $query->where('created_by', $user->id)
+                      ->where(function ($query) {
+                          $query->where('is_approved', 'Pending')
+                                ->orWhereNull('is_approved');
+                      })
+                      ->orWhere('is_approved', 'Approved');
+            });
+        })
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->sortable()

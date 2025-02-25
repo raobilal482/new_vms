@@ -11,25 +11,22 @@ class PermissionsSeeder extends Seeder
     public function run()
     {
             $permissions = [
-                // Event Permissions
                 'create event',
                 'edit event',
                 'delete event',
                 'view event',
+                'approve event',
 
-                // Task Permissions
                 'create task',
                 'edit task',
                 'delete task',
                 'view task',
 
-                // Time Tracking Permissions
                 'create time tracking',
                 'edit time tracking',
                 'delete time tracking',
                 'view time tracking',
 
-                // Role & Permission Management
                 'create role',
                 'edit role',
                 'delete role',
@@ -39,6 +36,11 @@ class PermissionsSeeder extends Seeder
                 'edit permission',
                 'delete permission',
                 'view permission',
+
+                'create user',
+                'edit user',
+                'delete user',
+                'view user',
             ];
 
             foreach ($permissions as $permission) {

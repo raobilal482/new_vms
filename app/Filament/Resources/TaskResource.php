@@ -40,16 +40,6 @@ class TaskResource extends Resource
                 ->required()
                 ->maxLength(255),
 
-                Select::make('status')
-                ->label('Task Status')
-                ->options([
-                    'assigned' => 'Assigned',
-                    'in progress' => 'In Progress',
-                    'completed' => 'Completed',
-                ])
-                ->default('assigned')
-                ->required(),
-
             Select::make('event_id')
             ->label('Event')
             ->relationship('event', 'title')
