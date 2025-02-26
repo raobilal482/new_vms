@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('time_trackings', function (Blueprint $table) {
             // Change hours_logged from bigint to numeric(10,2)
-            $table->decimal('hours_logged', 10, 2)->nullable()->change();
+            
         });
     }
 
