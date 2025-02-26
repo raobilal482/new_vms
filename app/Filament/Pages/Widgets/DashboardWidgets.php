@@ -5,7 +5,9 @@ namespace App\Filament\Pages\Widgets;
 use App\Models\Certificate;
 use App\Models\Event;
 use App\Models\Listing;
+use App\Models\Task;
 use App\Models\Tenancy;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -13,73 +15,38 @@ class DashboardWidgets extends StatsOverviewWidget
 {
     protected function getStats(): array
     {
-        // $isSuperAdmin = auth()->user()->is_super_admin;
 
-        // // Expired Certificates
-        // $expiredCertificates = Certificate::query()
-        //     ->when(! $isSuperAdmin, function ($query) {
-        //         $query->where('company_id', auth()->user()->company_id);
-        //     })
-        //     ->isExpired()
-        //     ->count();
+        $TotalEvents = Event::count();
 
-        // // Missing Certificates
-        // $missingCount = Certificate::query()
-        //     ->when(! $isSuperAdmin, function ($query) {
-        //         $query->where('company_id', auth()->user()->company_id);
-        //     })
-        //     ->isMissing()
-        //     ->count();
+        $ApprovedEvents = Event::where('is_approved', 'Approved')->count();
 
-        // // Tenancies
-        // $depositTorRegister = Tenancy::query()
-        //     ->when(! $isSuperAdmin, function ($query) {
-        //         $query->where('company_id', auth()->user()->company_id);
-        //     })
-        //     ->toBeRegistered()
-        //     ->count();
+        $NotApprovedEvents = Event::where('is_approved', 'Pending')->count();
 
-        // $incorrectTenancies = Tenancy::query()
-        //     ->when(! $isSuperAdmin, function ($query) {
-        //         $query->where('company_id', auth()->user()->company_id);
-        //     })
-        //     ->incorrect()
-        //     ->count();
+        $TotalTasks = Task::count();
 
-        // Units
-        $events = Event::count();
+        $totalVolunteers = User::where('type','Volunteer')->count();
+
+        $totalEventOrganizers = User::where('type','Event Organizer')->count();
+
+        $totalManagers = User::where('type','Manager')->count();
+
+
 
         return [
-            Stat::make('Events', $events ?? 0)
-                ->description('Click to view Events')
-                ->descriptionIcon('heroicon-s-eye')
-                ->color('warning')
-                ->url('#'),
-            // Stat::make('Missing Certificates', $missingCount ?? 0)
-            //     ->description('Click to view Certificates')
-            //     ->descriptionIcon('heroicon-m-eye')
-            //     ->color('warning')
-            //     // ->chart([7, 2, 10, 3, 15, 4, 17])
-            //     ->url('/certificates?tableFilters[Certificatefilter][certificate_status]=Missing'),
+            Stat::make('Total Events', $TotalEvents ?? 0),
 
-            // Stat::make('Deposit to Register', $depositTorRegister)
-            //     ->description('Click to view Tenancies')
-            //     ->descriptionIcon('heroicon-o-eye')
-            //     ->color('danger')
-            //     ->url('/tenancies?tableFilters[to_be_registered][value]=1'),
+            Stat::make('Approved Events', $ApprovedEvents ?? 0),
 
-            // Stat::make('Incorrect Tenancy Status', $incorrectTenancies)
-            //     ->description('Click to view Tenancies')
-            //     ->descriptionIcon('heroicon-m-eye')
-            //     ->color('danger')
-            //     ->url('/tenancies?tableFilters[to_be_registered][value]=null&tableFilters[status][incorrect_tenancies]=true'),
+            Stat::make('Not Approved Events', $NotApprovedEvents ?? 0),
 
-            // Stat::make('Vacant Units', $vacantUnits)
-            //     ->color('success')
-            //     ->description('Click to view Units')
-            //     ->descriptionIcon('heroicon-o-eye')
-            //     ->color('danger')
-            //     ->url('/units'),
+            Stat::make('Total Tasks', $TotalTasks ?? 0),
+
+            Stat::make('All Volunteers', $totalVolunteers ?? 0),
+
+            Stat::make('All Event Organizers', $totalEventOrganizers ?? 0),
+
+            Stat::make('All Managers', $totalManagers ?? 0),
+
 
         ];
     }
