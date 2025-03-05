@@ -14,7 +14,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\SpatieLaravelTranslatablePlugin;
+use Filament\SpatieLaravelTranslatablePlugin; // Note: This was incorrectly imported
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -23,6 +23,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
+use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+use Filament\Navigation\MenuItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -46,11 +49,30 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
-
-            ->plugin(
+            ->plugins([ // Use ->plugins() with an array
                 SpatieLaravelTranslatablePlugin::make()
-                ->defaultLocales(['en', 'lt', 'ru'])
-            )
+                    ->defaultLocales(['en', 'lt', 'ru']),
+                FilamentEditProfilePlugin::make()
+                    ->slug('profile')
+                    ->setTitle(' ')
+                    ->shouldRegisterNavigation(false)
+                    ->shouldShowBrowserSessionsForm(false)
+                    ->shouldShowAvatarForm(false)
+                    ->shouldShowEditProfileForm(false)
+                    ->shouldShowEditPasswordForm(false)
+                    ->shouldShowDeleteAccountForm(false)
+                    ->customProfileComponents([
+                        // \App\Livewire\CustomAvatarComponent::class,
+                        \App\Livewire\CustomProfileComponent::class,
+                        // \App\Livewire\CustomPasswordComponent::class,
+                    ]),
+            ])
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label(fn () => auth()->user()->name . (isset(auth()->user()->meta['last_name']) ? ' ' . auth()->user()->meta['last_name'] : ''))
+                    ->url(fn (): string => EditProfilePage::getUrl()) // Specify panel ID
+                    ->icon('heroicon-m-user-circle'),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -62,7 +84,6 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-
             ->registration(AuthRegister::class)
             ->navigationGroups([
                 NavigationGroup::make()

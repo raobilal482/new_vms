@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -57,5 +58,9 @@ public function totalTaskHours()
     return TimeTracking::whereIn('event_id', $this->events()->pluck('id'))
         ->sum('hours_logged');
 }
-
+public function getFilamentAvatarUrl(): ?string
+{
+    $avatarColumn = config('filament-edit-profile.avatar_column', 'avatar_url');
+    return $this->$avatarColumn ? Storage::url("$this->$avatarColumn") : null;
+}
 }
