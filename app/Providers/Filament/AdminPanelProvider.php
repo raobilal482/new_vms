@@ -2,16 +2,12 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Auth\Register as AuthRegister;
-use App\Filament\Pages\CustomRegister;
-use App\Filament\Pages\Dashboard;
-use App\Filament\Pages\Register;
+use App\Filament\Pages\Auth\CustomRegister as AuthCustomRegister;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\SpatieLaravelTranslatablePlugin; // Note: This was incorrectly imported
@@ -26,6 +22,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
 use Filament\Navigation\MenuItem;
+use Filament\Pages\Auth\CustomRegister;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -62,9 +59,7 @@ class AdminPanelProvider extends PanelProvider
                     ->shouldShowEditPasswordForm(false)
                     ->shouldShowDeleteAccountForm(false)
                     ->customProfileComponents([
-                        // \App\Livewire\CustomAvatarComponent::class,
                         \App\Livewire\CustomProfileComponent::class,
-                        // \App\Livewire\CustomPasswordComponent::class,
                     ]),
             ])
             ->userMenuItems([
@@ -84,7 +79,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->registration(AuthRegister::class)
+            ->registration(AuthCustomRegister::class)
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label(fn (): string => __('navigation.settings'))

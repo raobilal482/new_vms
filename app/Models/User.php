@@ -46,6 +46,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function givenFeedback()
+    {
+        return $this->hasMany(Feedback::class, 'giver_id');
+    }
+
+    // Feedback received by this user
+    public function receivedFeedback()
+    {
+        return $this->hasMany(Feedback::class, 'receiver_id');
+    }
     public function totalEventHours()
 {
     return $this->hasMany(TimeTracking::class)

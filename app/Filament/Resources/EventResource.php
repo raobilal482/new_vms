@@ -83,13 +83,13 @@ class EventResource extends Resource
                         ->label('Manager')
                         ->relationship('manager', 'name')
                         ->nullable(),
-                    Select::make('volunteer_id')
-                        ->label('Volunteer')
-                        ->relationship('volunteers', 'name')
-                        ->nullable()
-                        ->multiple()
+                        Select::make('volunteer_id') // Note: Should match the relationship name 'volunteers'
+                        ->label('Volunteers')
+                        ->relationship('volunteers', 'name') // Use 'volunteers' not 'volunteer_id'
+                        ->multiple() // Since it's a many-to-many relationship
                         ->searchable()
-                        ->preload(),
+                        ->preload()
+                        ->nullable(),
                     Checkbox::make('is_virtual')
                         ->label('Is Virtual?'),
                     TextInput::make('platform_link')
@@ -242,6 +242,35 @@ class EventResource extends Resource
                         ->modalHeading('Manage Event Approval')
                         ->modalSubmitActionLabel('Confirm')
                         ->modalWidth('sm'),
+                        // Tables\Actions\Action::make('give_feedback')
+                        // ->label('Give Feedback')
+                        // ->icon('heroicon-o-chat-bubble-left-right')
+                        // ->form([
+                        //     Textarea::make('comment')
+                        //         ->label('Feedback')
+                        //         ->required()
+                        //         ->maxLength(500)
+                        //         ->columnSpanFull(),
+                        //     Select::make('rating')
+                        //         ->label('Rating')
+                        //         ->options([1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5'])
+                        //         ->nullable(),
+                        // ])
+                        // ->action(function (Event $record, array $data) {
+                        //     \App\Models\Feedback::create([
+                        //         'giver_id' => auth()->id(),
+                        //         'event_id' => $record->id,
+                        //         'comment' => $data['comment'],
+                        //         'rating' => $data['rating'],
+                        //     ]);
+                        //     \Filament\Notifications\Notification::make()
+                        //         ->title('Feedback Submitted')
+                        //         ->success()
+                        //         ->send();
+                        // })
+                        // ->modalHeading('Provide Feedback on Event')
+                        // ->modalSubmitActionLabel('Submit Feedback')
+                        // ->modalWidth('lg'),
                 ])
                 ->label('Actions')
                 ->icon('heroicon-o-chevron-down'),
