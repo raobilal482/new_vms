@@ -1,4 +1,4 @@
-<x-dynamic-component
+ww<x-dynamic-component
     :component="$getFieldWrapperView()"
     :field="$field"
 >

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\UserTypeEnum;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
@@ -54,12 +55,7 @@ class UserResource extends Resource
                             ->dehydrated(fn ($state) => filled($state)),
 
                         Select::make('type')
-                            ->options([
-                                'Admin' => 'Admin',
-                                'Volunteer' => 'Volunteer',
-                                'Manager' => 'Manager',
-                                'Event Organizer' => 'Event Organizer',
-                            ])
+                            ->options(UserTypeEnum::class)
                             ->label('User Type')
                             ->nullable()
                             ->live() // Ensures real-time updates
@@ -80,7 +76,7 @@ class UserResource extends Resource
                         DatePicker::make('date_of_birth')
                             ->label('Date of Birth')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Select::make('availability')
                             ->options([
@@ -100,45 +96,45 @@ class UserResource extends Resource
                         TextInput::make('emergency_contact_name')
                             ->label('Emergency Contact Name')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         TextInput::make('emergency_contact_phone')
                             ->tel()
                             ->label('Emergency Contact Phone')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         FileUpload::make('profile_picture')
                             ->label('Profile Picture')
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('skills')
                             ->label('Skills')
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('preferred_roles')
                             ->label('Preferred Roles')
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('address')
                             ->label('Address')
                             ->rows(3)
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('motivation')
                             ->label('Motivation')
                             ->rows(4)
                             ->nullable()
                             ->columnSpan(2)
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Toggle::make('is_active')
                             ->default(true)
@@ -214,6 +210,36 @@ class UserResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('give_feedback')
+                        ->label('Give Feedback')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->form([
+                            Textarea::make('comment')
+                                ->label('Feedback')
+                                ->required()
+                                ->maxLength(500)
+                                ->columnSpanFull(),
+                            Select::make('rating')
+                                ->label('Rating')
+                                ->options([1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5'])
+                                ->nullable(),
+                        ])
+                        ->action(function (User $record, array $data) {
+                            \App\Models\Feedback::create([
+                                'giver_id' => auth()->id(),
+                                'receiver_id' => $record->id,
+                                'comment' => $data['comment'],
+                                'rating' => $data['rating'],
+                                'feedback_type' => $record->type,
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Feedback Submitted')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Provide Feedback on Event')
+                        ->modalSubmitActionLabel('Submit Feedback')
+                        ->modalWidth('lg'),
                 ])->icon('heroicon-o-chevron-down'),
             ])
             ->defaultSort('id', 'desc');

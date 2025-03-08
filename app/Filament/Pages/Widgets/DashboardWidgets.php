@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Widgets;
 
+use App\Enums\UserTypeEnum;
 use App\Models\Certificate;
 use App\Models\Event;
 use App\Models\Listing;
@@ -24,11 +25,11 @@ class DashboardWidgets extends StatsOverviewWidget
 
         $TotalTasks = Task::count();
 
-        $totalVolunteers = User::where('type','Volunteer')->count();
+        $totalVolunteers = User::where('type',UserTypeEnum::VOLUNTEER->value)->count();
 
-        $totalEventOrganizers = User::where('type','Event Organizer')->count();
+        $totalEventOrganizers = User::where('type',UserTypeEnum::EVENT_ORGANIZER->value)->count();
 
-        $totalManagers = User::where('type','Manager')->count();
+        $totalManagers = User::where('type',UserTypeEnum::MANAGER->value)->count();
 
 
 

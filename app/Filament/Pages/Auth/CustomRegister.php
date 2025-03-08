@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
+use App\Enums\UserTypeEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Component;
 use Filament\Pages\Auth\Register as BaseRegister;
@@ -31,10 +32,10 @@ class CustomRegister extends BaseRegister
     {
         return Select::make('type')
             ->options([
-                'Volunteer' => 'Volunteer',
-                'Event Organizer' => 'Even Organizer',
+                UserTypeEnum::VOLUNTEER->value => UserTypeEnum::VOLUNTEER->value,
+                UserTypeEnum::EVENT_ORGANIZER->value => UserTypeEnum::EVENT_ORGANIZER->value,
             ])
-            ->default('Volunteer')
+            ->default(UserTypeEnum::VOLUNTEER->value)
             ->required();
     }
 }

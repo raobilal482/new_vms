@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->foreignId('receiver_id')->nullable()->constrained('users')->onDelete('cascade'); // User receiving feedback (null for event/task)
             $table->foreignId('event_id')->nullable()->constrained('events')->onDelete('cascade'); // Event feedback (null if not event-related)
             $table->foreignId('task_id')->nullable()->constrained('tasks')->onDelete('cascade'); // Task feedback (null if not task-related)
+            $table->string('feedback_type'); // Feedback tex
             $table->text('comment'); // Feedback text
             $table->unsignedTinyInteger('rating')->nullable(); // Rating (e.g., 1-5)
             $table->timestamps();

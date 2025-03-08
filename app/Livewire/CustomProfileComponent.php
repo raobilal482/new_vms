@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\UserTypeEnum;
 use Livewire\Component;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -115,7 +116,7 @@ class CustomProfileComponent extends EditProfileForm
                         DatePicker::make('date_of_birth')
                             ->label('Date of Birth')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Select::make('availability')
                             ->options([
@@ -135,40 +136,40 @@ class CustomProfileComponent extends EditProfileForm
                         TextInput::make('emergency_contact_name')
                             ->label('Emergency Contact Name')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         TextInput::make('emergency_contact_phone')
                             ->tel()
                             ->label('Emergency Contact Phone')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
 
                         Textarea::make('skills')
                             ->label('Skills')
                             ->nullable()
                             ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('preferred_roles')
                             ->label('Preferred Roles')
                             ->nullable()
                             ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('address')
                             ->label('Address')
                             ->rows(3)
                             ->nullable()
                             ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('motivation')
                             ->label('Motivation')
                             ->rows(4)
                             ->nullable()
                             ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === 'Volunteer'),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         Toggle::make('is_active')
                             ->default(true)

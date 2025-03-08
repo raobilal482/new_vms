@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Enums\UserTypeEnum;
 use App\Filament\Resources\UserResource;
 use Filament\Actions;
 use Filament\Infolists\Components\Section;
@@ -24,17 +25,17 @@ class ViewUser extends ViewRecord
                         TextEntry::make('date_of_birth')
                             ->label('Date of Birth')
                             ->date()
-                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($record) => $record->type === UserTypeEnum::VOLUNTEER->value), // Show only for Volunteer
                         TextEntry::make('address')
                             ->label('Address')
-                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($record) => $record->type === UserTypeEnum::VOLUNTEER->value), // Show only for Volunteer
                         TextEntry::make('availability')->label('Availability'),
                         TextEntry::make('skills')
                             ->label('Skills')
-                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($record) => $record->type === UserTypeEnum::VOLUNTEER->value), // Show only for Volunteer
                         TextEntry::make('preferred_roles')
                             ->label('Preferred Roles')
-                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($record) => $record->type === UserTypeEnum::VOLUNTEER->value), // Show only for Volunteer
                         TextEntry::make('is_active')
                             ->label('Status')
                             ->formatStateUsing(fn ($state) => $state ? 'Active' : 'Inactive')
@@ -43,13 +44,13 @@ class ViewUser extends ViewRecord
                         TextEntry::make('languages')->label('Languages'),
                         TextEntry::make('emergency_contact_name')
                             ->label('Emergency Contact Name')
-                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($record) => $record->type === UserTypeEnum::VOLUNTEER->value), // Show only for Volunteer
                         TextEntry::make('emergency_contact_phone')
                             ->label('Emergency Contact Phone')
-                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($record) => $record->type === UserTypeEnum::VOLUNTEER->value), // Show only for Volunteer
                         TextEntry::make('motivation')
                             ->label('Motivation')
-                            ->visible(fn ($record) => $record->type === 'Volunteer'), // Show only for Volunteer
+                            ->visible(fn ($record) => $record->type === UserTypeEnum::VOLUNTEER->value), // Show only for Volunteer
                     ])->columns(3)
             ]);
     }

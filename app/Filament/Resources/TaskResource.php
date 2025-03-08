@@ -8,6 +8,7 @@ use App\Models\Task;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -104,8 +105,41 @@ class TaskResource extends Resource
                 // Add filters here if needed
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('give_feedback')
+                        ->label('Give Feedback')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->form([
+                            Textarea::make('comment')
+                                ->label('Feedback')
+                                ->required()
+                                ->maxLength(500)
+                                ->columnSpanFull(),
+                            Select::make('rating')
+                                ->label('Rating')
+                                ->options([1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5'])
+                                ->nullable(),
+                        ])
+                        ->action(function (Task $record, array $data) {
+                            \App\Models\Feedback::create([
+                                'giver_id' => auth()->id(),
+                                'task_id' => $record->id,
+                                'comment' => $data['comment'],
+                                'rating' => $data['rating'],
+                                'feedback_type' => 'task',
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Feedback Submitted')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Provide Feedback on Event')
+                        ->modalSubmitActionLabel('Submit Feedback')
+                        ->modalWidth('lg'),
+                ])->icon('heroicon-o-chevron-down'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -9,4 +9,11 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateFeedback extends CreateRecord
 {
     protected static string $resource = FeedbackResource::class;
+
+    public function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['giver_id'] = auth()->id();
+
+        return $data;
+    }
 }

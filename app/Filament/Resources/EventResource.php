@@ -242,35 +242,36 @@ class EventResource extends Resource
                         ->modalHeading('Manage Event Approval')
                         ->modalSubmitActionLabel('Confirm')
                         ->modalWidth('sm'),
-                        // Tables\Actions\Action::make('give_feedback')
-                        // ->label('Give Feedback')
-                        // ->icon('heroicon-o-chat-bubble-left-right')
-                        // ->form([
-                        //     Textarea::make('comment')
-                        //         ->label('Feedback')
-                        //         ->required()
-                        //         ->maxLength(500)
-                        //         ->columnSpanFull(),
-                        //     Select::make('rating')
-                        //         ->label('Rating')
-                        //         ->options([1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5'])
-                        //         ->nullable(),
-                        // ])
-                        // ->action(function (Event $record, array $data) {
-                        //     \App\Models\Feedback::create([
-                        //         'giver_id' => auth()->id(),
-                        //         'event_id' => $record->id,
-                        //         'comment' => $data['comment'],
-                        //         'rating' => $data['rating'],
-                        //     ]);
-                        //     \Filament\Notifications\Notification::make()
-                        //         ->title('Feedback Submitted')
-                        //         ->success()
-                        //         ->send();
-                        // })
-                        // ->modalHeading('Provide Feedback on Event')
-                        // ->modalSubmitActionLabel('Submit Feedback')
-                        // ->modalWidth('lg'),
+                    Tables\Actions\Action::make('give_feedback')
+                        ->label('Give Feedback')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->form([
+                            Textarea::make('comment')
+                                ->label('Feedback')
+                                ->required()
+                                ->maxLength(500)
+                                ->columnSpanFull(),
+                            Select::make('rating')
+                                ->label('Rating')
+                                ->options([1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5'])
+                                ->nullable(),
+                        ])
+                        ->action(function (Event $record, array $data) {
+                            \App\Models\Feedback::create([
+                                'giver_id' => auth()->id(),
+                                'event_id' => $record->id,
+                                'comment' => $data['comment'],
+                                'rating' => $data['rating'],
+                                'feedback_type' => 'event',
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Feedback Submitted')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Provide Feedback on Event')
+                        ->modalSubmitActionLabel('Submit Feedback')
+                        ->modalWidth('lg'),
                 ])
                 ->label('Actions')
                 ->icon('heroicon-o-chevron-down'),
