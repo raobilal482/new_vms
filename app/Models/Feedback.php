@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserTypeEnum;
 use Illuminate\Database\Eloquent\Model;
 
 class Feedback extends Model
@@ -24,15 +25,20 @@ class Feedback extends Model
     }
     public function volunteer()
     {
-        return $this->belongsTo(User::class, 'volunteer_id');
+        return $this->belongsTo(User::class, 'user_id')
+        ->where('type', UserTypeEnum::VOLUNTEER->value);
     }
     public function organizer()
     {
-        return $this->belongsTo(User::class, 'organizer_id');
+        return $this->belongsTo(User::class, 'user_id')
+
+        ->where('type', UserTypeEnum::EVENT_ORGANIZER->value);
     }
     public function manager()
     {
-        return $this->belongsTo(User::class, 'manager_id');
+        return $this->belongsTo(User::class, 'user_id')
+
+        ->where('type', UserTypeEnum::MANAGER->value);
     }
     public function giver()
     {
