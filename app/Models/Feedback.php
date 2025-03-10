@@ -25,18 +25,18 @@ class Feedback extends Model
     }
     public function volunteer()
     {
-        return $this->belongsTo(User::class, 'user_id')
-        ->where('type', UserTypeEnum::VOLUNTEER->value);
+        return $this->belongsTo(User::class, 'receiver_id')
+            ->where('type', UserTypeEnum::VOLUNTEER->value);
     }
     public function organizer()
     {
-        return $this->belongsTo(User::class, 'user_id')
+        return $this->belongsTo(User::class, 'receiver_id')
 
         ->where('type', UserTypeEnum::EVENT_ORGANIZER->value);
     }
     public function manager()
     {
-        return $this->belongsTo(User::class, 'user_id')
+        return $this->belongsTo(User::class, 'receiver_id')
 
         ->where('type', UserTypeEnum::MANAGER->value);
     }
