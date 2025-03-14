@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserTypeEnum;
 use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
@@ -13,7 +14,8 @@ class Task extends Model
 
     public function volunteers()
     {
-        return $this->belongsToMany(User::class, 'task_volunteer', 'task_id', 'volunteer_id');
+        return $this->belongsToMany(User::class, 'task_volunteer', 'task_id', 'volunteer_id')
+        ->where('type', UserTypeEnum::VOLUNTEER->value);
     }
     public function feedback()
     {

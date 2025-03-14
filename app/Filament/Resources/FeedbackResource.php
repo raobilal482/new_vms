@@ -114,7 +114,19 @@ class FeedbackResource extends Resource
                         };
                     }),
                 TextColumn::make('comment')->limit(50),
-                TextColumn::make('rating')->default('N/A'),
+                TextColumn::make('rating')
+                ->default('N/A')
+                ->formatStateUsing(function ($state) {
+                    if ($state === 'N/A' || !$state) {
+                        return 'N/A';
+                    }
+                    $rating = (int) $state;
+                    $maxStars = 5;
+                    $filledStars = str_repeat('<span class="text-yellow-500">★</span>', min($rating, $maxStars));
+                    $emptyStars = str_repeat('<span class="text-gray-300">☆</span>', $maxStars - min($rating, $maxStars));
+                    return $filledStars . $emptyStars;
+                })
+                ->html(),
                 TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([

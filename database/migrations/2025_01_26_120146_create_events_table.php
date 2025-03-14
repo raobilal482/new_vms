@@ -32,6 +32,7 @@ return new class extends Migration {
             $table->string('status')->default('Upcoming'); // Event status
             $table->unsignedBigInteger('duration')->nullable(); // Event duration in minutes
             $table->text('tags')->nullable(); // Event tags (e.g., for categorization)
+            $table->boolean('whitelist')->nullable();
             $table->timestamps();
         });
     }

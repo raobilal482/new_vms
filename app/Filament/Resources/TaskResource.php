@@ -2,21 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\UserTypeEnum;
 use App\Filament\Resources\TaskResource\Pages;
 use App\Filament\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
+use App\Models\TimeTracking;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class TaskResource extends Resource
 {
@@ -139,7 +143,38 @@ class TaskResource extends Resource
                         ->modalHeading('Provide Feedback on Event')
                         ->modalSubmitActionLabel('Submit Feedback')
                         ->modalWidth('lg'),
-                ])->icon('heroicon-o-chevron-down'),
+
+                    Tables\Actions\Action::make('pick_task')
+                    ->label('Pick Task')
+                    ->visible(fn () => Auth::user()->type === UserTypeEnum::VOLUNTEER->value) // Only visible to volunteers
+                    ->requiresConfirmation() // Shows a confirmation modal
+                    ->modalHeading('Pick This Task')
+                    ->modalDescription('Do you want to pick this task? This will start time tracking.')
+                    ->modalSubmitActionLabel('Yes, Pick Task')
+                    ->modalCancelActionLabel('No, Cancel')
+                    ->action(function (Task $record) {
+                        $volunteer = Auth::user();
+
+                        // Create TimeTracking record
+                        TimeTracking::create([
+                            'volunteer_id' => $volunteer->id,
+                            'task_id' => $record->id,
+                            'checkin_time' => null,
+                            'checkout_time' => null,
+                            'break_included' => false,
+                            'break_duration_minutes' => 0,
+                            'hours_logged' => 0,
+                        ]);
+
+                        // Send notification to the volunteer
+                        Notification::make()
+                            ->title('Task Picked')
+                            ->body('Time tracking created. Please check in before doing this task.')
+                            ->success()
+                            ->sendToDatabase($volunteer);
+                    })
+                    ->color('success'), // Green button
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\UserTypeEnum;
 use App\Filament\Resources\EventResource\Pages;
 use App\Filament\Resources\EventResource\RelationManagers;
 use App\Models\Event;
@@ -22,6 +23,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class EventResource extends Resource
 {
@@ -113,6 +115,8 @@ class EventResource extends Resource
                         ->label('Event Duration (in minutes)')
                         ->numeric()
                         ->nullable(),
+                    Checkbox::make('whitelist')
+                        ->label('Whitelist'),
                     // Optional: If you want to show is_approved in the form (hidden by default)
                     // Select::make('is_approved')
                     //     ->label('Approval Status')
@@ -133,16 +137,22 @@ class EventResource extends Resource
         ->modifyQueryUsing(function (Builder $query) {
             $user = auth()->user();
             if ($user->type === 'Admin' || $user->hasRole('Admin')) {
+                $query->where('whitelist', false);
                 return $query;
             }
-            return $query->where(function (Builder $query) use ($user) {
-                $query->where('created_by', $user->id)
-                      ->where(function ($query) {
-                          $query->where('is_approved', 'Pending')
-                                ->orWhereNull('is_approved');
-                      })
-                      ->orWhere('is_approved', 'Approved');
-            });
+            if($user->type !== 'Admin') {
+                return $query->where(function (Builder $query) use ($user) {
+                    $query->where('created_by', $user->id)
+                          ->where(function ($query) {
+                              $query->where('is_approved', 'Approved')
+                                    ->orWhereNull('is_approved');
+                          })
+                          ->orWhere('whitelist', true)
+                          ->orWhere('is_approved', 'Rejected')
+                          ;
+                });
+            }
+
         })
             ->columns([
                 Tables\Columns\TextColumn::make('title')
@@ -175,9 +185,14 @@ class EventResource extends Resource
                     ->label('Duration (min)'),
                 Tables\Columns\TextColumn::make('tags')
                     ->label('Tags'),
-                    Tables\Columns\TextColumn::make('is_approved')
+                Tables\Columns\TextColumn::make('is_approved')
                     ->label('Approval Status')
-                    ->formatStateUsing(fn ($state) => $state ?? 'Pending') // Display "Pending" if NULL or empty
+                    ->formatStateUsing(function ($record, $state){
+                        if($record->whitelist) {
+                            return "Whitelist";
+                        }
+                        return $state ?? 'Pending';
+                    }) // Display "Pending" if NULL or empty
                     ->default('Pending')
                     ->badge()
                     ->color(fn ($state) => match ($state ?? 'Pending') {
@@ -272,6 +287,28 @@ class EventResource extends Resource
                         ->modalHeading('Provide Feedback on Event')
                         ->modalSubmitActionLabel('Submit Feedback')
                         ->modalWidth('lg'),
+
+
+                    Tables\Actions\Action::make('whilelist')
+                    ->label('Apply for Approval')
+                    ->visible(fn () => Auth::user()->type === UserTypeEnum::EVENT_ORGANIZER->value) // Only visible to volunteers
+                    ->requiresConfirmation() // Shows a confirmation modal
+                    ->modalHeading('Apply for Approval')
+                    ->modalDescription('Do you want to apply this event for approval.')
+                    ->modalSubmitActionLabel('Yes, Apply')
+                    ->modalCancelActionLabel('No, Cancel')
+                    ->action(function (Event $record) {
+                        $volunteer = Auth::user();
+
+                        // Create TimeTracking record
+                        $record->update([
+                            'whitelist' => false,
+                            'is_approved' =>'Pending',
+                        ]);
+
+                    })
+                    ->color('success'),
+
                 ])
                 ->label('Actions')
                 ->icon('heroicon-o-chevron-down'),

@@ -56,8 +56,22 @@ class ViewFeedback extends ViewRecord
                     ->default('N/A')
                     ->hidden(fn ($record) => $record->feedback_type !== UserTypeEnum::MANAGER->value),
                 TextEntry::make('comment')->label('Feedback Comment'),
-                TextEntry::make('rating')->label('Rating')->default('N/A'),
-                TextEntry::make('created_at')->label('Submitted On')->dateTime(),
+                TextEntry::make('rating')
+                ->label('Rating')
+                ->default('N/A')
+                ->formatStateUsing(function ($state) {
+                    if ($state === 'N/A' || !$state) {
+                        return 'N/A'; // Return "N/A" if the rating is empty or default
+                    }
+
+                    $rating = (int) $state; // Convert to integer
+                    $maxStars = 5; // Maximum number of stars (adjust as needed)
+                    $filledStars = str_repeat('★', min($rating, $maxStars)); // Filled stars (★)
+                    $emptyStars = str_repeat('☆', $maxStars - min($rating, $maxStars)); // Empty stars (☆)
+
+                    return $filledStars . $emptyStars; // Combine filled and empty stars
+                }),
+                                TextEntry::make('created_at')->label('Submitted On')->dateTime(),
             ]);
     }
 }
