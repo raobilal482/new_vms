@@ -27,12 +27,12 @@ class ViewEvent extends ViewRecord
                     ->hidden(fn ($record) => empty($record->description)),
                 TextEntry::make('location')
                     ->label('Location'),
-                TextEntry::make('start_time')
+                    TextEntry::make('start_time')
                     ->label('Start Time')
-                    ->dateTime(),
+                    ->formatStateUsing(fn ($state) => date('g:i A', strtotime($state))),    
                 TextEntry::make('end_time')
                     ->label('End Time')
-                    ->dateTime(),
+                    ->date(),
                 TextEntry::make('max_volunteers')
                     ->label('Max Volunteers'),
                 TextEntry::make('type')

@@ -2,17 +2,27 @@
 
 namespace App\Policies;
 
+use App\Enums\PermissionTypeEnum;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class UserPolicy
 {
+    public const PERMISSIONS = [
+        ['name' => 'user.view-any', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'user.view', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'user.create', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'user.edit', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'user.delete', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'user.restore', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'user.force-delete', 'type' => PermissionTypeEnum::WEB],
+    ];
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view user');
+        return $user->hasPermissionTo('user.view-any');
     }
 
     /**
@@ -20,7 +30,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->can('view user');
+        return $user->hasPermissionTo('user.view');
     }
 
     /**
@@ -28,7 +38,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create user');
+        return $user->hasPermissionTo('user.create');
     }
 
     /**
@@ -36,7 +46,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->can('edit user');
+        return $user->hasPermissionTo('user.edit');
     }
 
     /**
@@ -44,7 +54,7 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $user->can('delete user');
+        return $user->hasPermissionTo('user.delete');
     }
 
     /**
@@ -52,7 +62,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return $user->can('edit user'); // Assuming restore falls under edit permission
+        return $user->hasPermissionTo('user.restore');
     }
 
     /**
@@ -60,6 +70,6 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        return $user->can('delete user'); // Assuming force delete falls under delete permission
+        return $user->hasPermissionTo('user.force-delete');
     }
 }

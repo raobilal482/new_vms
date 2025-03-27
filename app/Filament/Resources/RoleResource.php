@@ -41,7 +41,8 @@ class RoleResource extends Resource
                                     ->disabled(true)
                                     ->default('web')
                                     ->maxLength(255)
-                                    ->label('Guard Name'),
+                                    ->label('Guard Name')
+                                    ->hidden(),
 
                                 Section::make('Permissions')
                                     ->schema([

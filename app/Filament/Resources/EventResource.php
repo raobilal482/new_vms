@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use AbanoubNassem\FilamentPhoneField\Forms\Components\PhoneInput;
 use App\Enums\UserTypeEnum;
 use App\Filament\Resources\EventResource\Pages;
 use App\Filament\Resources\EventResource\RelationManagers;
 use App\Models\Event;
+use Coolsam\FilamentFlatpickr\Forms\Components\Flatpickr;
 use Filament\Forms;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -49,12 +52,14 @@ class EventResource extends Resource
                         ->label('Location')
                         ->required()
                         ->maxLength(255),
-                    DateTimePicker::make('start_time')
-                        ->label('Start Time')
-                        ->required(),
-                    DateTimePicker::make('end_time')
+                    Flatpickr::make('start_time')
+                            ->label('Start Time')
+                            ->required()
+                            ->dateFormat('Y-m-d'),
+                    Flatpickr::make('end_time')
                         ->label('End Time')
-                        ->required(),
+                        ->required()
+                        ->dateFormat('Y-m-d'),            
                     TextInput::make('max_volunteers')
                         ->label('Max Volunteers')
                         ->numeric()
@@ -105,9 +110,16 @@ class EventResource extends Resource
                         ->label('Contact Email')
                         ->nullable()
                         ->email(),
-                    TextInput::make('contact_phone')
-                        ->label('Contact Phone')
-                        ->nullable(),
+                    PhoneInput::make('contact_phone')
+                        ->initialCountry('LT') // Set initial country to Lithuania
+                        ->default('+3706')     // Prefill with +3706
+                        ->tel()                // Enable phone input functionality
+                        ->mask(fn (TextInput\Mask $mask) => $mask
+                            ->pattern('+3706{0000000}') // Enforce +3706 followed by exactly 7 digits
+                            ->numeric()                  // Restrict input to numbers only
+                        )
+                        ->nullable()
+                        ,
                     Textarea::make('tags')
                         ->label('Tags')
                         ->nullable(),

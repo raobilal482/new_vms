@@ -2,18 +2,28 @@
 
 namespace App\Policies;
 
+use App\Enums\PermissionTypeEnum;
 use App\Models\Event;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class EventPolicy
 {
+    public const PERMISSIONS = [
+        ['name' => 'event.view-any', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.view', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.create', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.edit', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.delete', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.restore', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.force-delete', 'type' => PermissionTypeEnum::WEB],
+    ];
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view event');
+        return $user->hasPermissionTo('event.view-any');
     }
 
     /**
@@ -21,7 +31,7 @@ class EventPolicy
      */
     public function view(User $user, Event $event): bool
     {
-        return $user->can('view event');
+        return $user->hasPermissionTo('event.view');
     }
 
     /**
@@ -29,7 +39,7 @@ class EventPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create event');
+        return $user->hasPermissionTo('event.create');
     }
 
     /**
@@ -37,7 +47,7 @@ class EventPolicy
      */
     public function update(User $user, Event $event): bool
     {
-        return $user->can('edit event');
+        return $user->hasPermissionTo('event.edit');
     }
 
     /**
@@ -45,7 +55,7 @@ class EventPolicy
      */
     public function delete(User $user, Event $event): bool
     {
-        return $user->can('delete event');
+        return $user->hasPermissionTo('event.delete');
     }
 
     /**
@@ -53,7 +63,7 @@ class EventPolicy
      */
     public function restore(User $user, Event $event): bool
     {
-        return $user->can('edit event'); // Assuming restore falls under edit permission
+        return $user->hasPermissionTo('event.restore');
     }
 
     /**
@@ -61,6 +71,6 @@ class EventPolicy
      */
     public function forceDelete(User $user, Event $event): bool
     {
-        return $user->can('delete event'); // Assuming force delete falls under delete permission
+        return $user->hasPermissionTo('event.force-delete');
     }
 }

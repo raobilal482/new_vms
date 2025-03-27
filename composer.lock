@@ -4,8 +4,71 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "61f6f1863a433058508f70df788e4e27",
+    "content-hash": "763bf35e80973a151130f1fb1e7f07fe",
     "packages": [
+        {
+            "name": "abanoubnassem/filament-phone-field",
+            "version": "v0.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/AbanoubNassem/filament-phone-field.git",
+                "reference": "7b82b9e30ae953c22f06e1dc1903e8c1d3d451b0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/AbanoubNassem/filament-phone-field/zipball/7b82b9e30ae953c22f06e1dc1903e8c1d3d451b0",
+                "reference": "7b82b9e30ae953c22f06e1dc1903e8c1d3d451b0",
+                "shasum": ""
+            },
+            "require": {
+                "filament/forms": "^2.16|^3.0-stable|^3.2.51",
+                "illuminate/contracts": "^9.0|^10.0|^11.0",
+                "php": "^8.0|^8.1|^8.2|^8.3",
+                "spatie/laravel-package-tools": "^1.13.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "FilamentPhoneField": "AbanoubNassem\\FilamentPhoneField\\Facades\\FilamentPhoneField"
+                    },
+                    "providers": [
+                        "AbanoubNassem\\FilamentPhoneField\\FilamentPhoneFieldServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "AbanoubNassem\\FilamentPhoneField\\": "src",
+                    "AbanoubNassem\\FilamentPhoneField\\Database\\Factories\\": "database/factories"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Abanoub Nassem",
+                    "email": "abanoubnassemmousa@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Provides a Phone Input field for the Filament Forms, works in Admin-Panel and Forntend-Forms",
+            "homepage": "https://github.com/abanoubnassem/filament-phone-field",
+            "keywords": [
+                "AbanoubNassem",
+                "International Telephone Input",
+                "filament-phone-field",
+                "intl-tel-input",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/AbanoubNassem/filament-phone-field/issues",
+                "source": "https://github.com/AbanoubNassem/filament-phone-field/tree/v0.0.7"
+            },
+            "time": "2025-02-08T06:32:00+00:00"
+        },
         {
             "name": "anourvalar/eloquent-serialize",
             "version": "1.2.27",
@@ -425,6 +488,79 @@
                 }
             ],
             "time": "2024-02-09T16:56:22+00:00"
+        },
+        {
+            "name": "coolsam/flatpickr",
+            "version": "v3.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/savannabits/filament-flatpickr.git",
+                "reference": "3a6a6548626f44a26ec699ee906e4526ede61ae6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/savannabits/filament-flatpickr/zipball/3a6a6548626f44a26ec699ee906e4526ede61ae6",
+                "reference": "3a6a6548626f44a26ec699ee906e4526ede61ae6",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.14.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^7.9",
+                "nunomaduro/larastan": "^2.0.1",
+                "orchestra/testbench": "^8.0|^9.0",
+                "pestphp/pest": "^2.0",
+                "pestphp/pest-plugin-arch": "^2.0",
+                "pestphp/pest-plugin-laravel": "^2.0",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "spatie/laravel-ray": "^1.26"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "FilamentFlatpickr": "Coolsam\\FilamentFlatpickr\\Facades\\FilamentFlatpickr"
+                    },
+                    "providers": [
+                        "Coolsam\\FilamentFlatpickr\\FilamentFlatpickrServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Coolsam\\FilamentFlatpickr\\": "src/",
+                    "Coolsam\\FilamentFlatpickr\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sam Maosa",
+                    "email": "smaosa@savannabits.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Integrate Flatpickr with FilamentPHP",
+            "homepage": "https://github.com/savannabits/filament-flatpickr",
+            "keywords": [
+                "coolsam",
+                "filament-flatpickr",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/savannabits/filament-flatpickr/issues",
+                "source": "https://github.com/savannabits/filament-flatpickr/tree/v3.2.0"
+            },
+            "time": "2025-02-28T09:54:29+00:00"
         },
         {
             "name": "danharrin/date-format-converter",
@@ -10595,12 +10731,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

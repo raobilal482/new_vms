@@ -1,50 +1,50 @@
 <?php
+
 namespace Database\Seeders;
 
-use App\Models\Permission;
+use App\Policies\EventPolicy;
+use App\Policies\FeedbackPolicy;
+use App\Policies\PermissionPolicy;
+use App\Policies\RolePolicy;
+use App\Policies\TaskPolicy;
+use App\Policies\TimeTrackingPolicy;
+use App\Policies\UserPolicy;
+use Spatie\Permission\Models\Permission; // Use Spatie's Permission model
 use Illuminate\Database\Seeder;
 
 class PermissionsSeeder extends Seeder
 {
     public function run()
     {
-        $permissions = [
-            'create event',
-            'edit event',
-            'delete event',
-            'view event',
-            'approve event',
-
-            'create task',
-            'edit task',
-            'delete task',
-            'view task',
-
-            'create time tracking',
-            'edit time tracking',
-            'delete time tracking',
-            'view time tracking',
-
-            'create role',
-            'edit role',
-            'delete role',
-            'view role',
-
-            'create permission',
-            'edit permission',
-            'delete permission',
-            'view permission',
-
-            'create user',
-            'edit user',
-            'delete user',
-            'view user',
+        // List of all policy classes with PERMISSIONS constants
+        $policyClasses = [
+            EventPolicy::class,
+            FeedbackPolicy::class,
+            PermissionPolicy::class,
+            RolePolicy::class,
+            TaskPolicy::class,
+            TimeTrackingPolicy::class,
+            UserPolicy::class,
         ];
 
+        // Collect all permissions from the policies
+        $permissions = [];
+        foreach ($policyClasses as $policyClass) {
+            if (defined("$policyClass::PERMISSIONS")) {
+                foreach ($policyClass::PERMISSIONS as $permission) {
+                    $permissions[] = [
+                        'name' => $permission['name'],
+                        'guard_name' => 'web', // Adjust if using a different guard
+                    ];
+                }
+            }
+        }
+
+        // Seed the permissions
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
-                'name' => $permission,
-                'guard_name' => 'web'  
+                'name' => $permission['name'],
+                'guard_name' => $permission['guard_name'],
             ]);
         }
     }

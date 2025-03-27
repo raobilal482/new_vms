@@ -2,18 +2,28 @@
 
 namespace App\Policies;
 
+use App\Enums\PermissionTypeEnum;
 use App\Models\TimeTracking;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TimeTrackingPolicy
 {
+    public const PERMISSIONS = [
+        ['name' => 'time-tracking.view-any', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'time-tracking.view', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'time-tracking.create', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'time-tracking.edit', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'time-tracking.delete', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'time-tracking.restore', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'time-tracking.force-delete', 'type' => PermissionTypeEnum::WEB],
+    ];
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view time tracking');
+        return $user->hasPermissionTo('time-tracking.view-any');
     }
 
     /**
@@ -21,7 +31,7 @@ class TimeTrackingPolicy
      */
     public function view(User $user, TimeTracking $timeTracking): bool
     {
-        return $user->can('view time tracking');
+        return $user->hasPermissionTo('time-tracking.view');
     }
 
     /**
@@ -29,7 +39,7 @@ class TimeTrackingPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create time tracking');
+        return $user->hasPermissionTo('time-tracking.create');
     }
 
     /**
@@ -37,7 +47,7 @@ class TimeTrackingPolicy
      */
     public function update(User $user, TimeTracking $timeTracking): bool
     {
-        return $user->can('edit time tracking');
+        return $user->hasPermissionTo('time-tracking.edit');
     }
 
     /**
@@ -45,7 +55,7 @@ class TimeTrackingPolicy
      */
     public function delete(User $user, TimeTracking $timeTracking): bool
     {
-        return $user->can('delete time tracking');
+        return $user->hasPermissionTo('time-tracking.delete');
     }
 
     /**
@@ -53,7 +63,7 @@ class TimeTrackingPolicy
      */
     public function restore(User $user, TimeTracking $timeTracking): bool
     {
-        return $user->can('edit time tracking'); // Assuming restore falls under edit permission
+        return $user->hasPermissionTo('time-tracking.restore');
     }
 
     /**
@@ -61,6 +71,6 @@ class TimeTrackingPolicy
      */
     public function forceDelete(User $user, TimeTracking $timeTracking): bool
     {
-        return $user->can('delete time tracking'); // Assuming force delete falls under delete permission
+        return $user->hasPermissionTo('time-tracking.force-delete');
     }
 }

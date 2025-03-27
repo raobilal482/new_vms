@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use AbanoubNassem\FilamentPhoneField\Forms\Components\PhoneInput;
 use App\Enums\UserTypeEnum;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
+use Coolsam\FilamentFlatpickr\Forms\Components\Flatpickr;
 use Filament\Forms;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -24,7 +27,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role; // Import Role model
-use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class UserResource extends Resource
 {
@@ -62,19 +64,20 @@ class UserResource extends Resource
                             ->required(),
 
                         PhoneInput::make('phone')
-                            ->validateFor('AUTO')
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($livewire, $component) {
-                                $livewire->validateOnly($component->getStatePath());
-                            })
-                            ->initialCountry('US')
                             ->label('Phone')
-                            ->formatOnDisplay(true)
-                            ->placeholderNumberType('FIXED_LINE')
-                            ->strictMode(),
+                            ->initialCountry('LT') // Set initial country to Lithuania
+                            ->default('+3706')     // Prefill with +3706
+                            ->tel()                // Enable phone input functionality
+                            ->mask(fn (TextInput\Mask $mask) => $mask
+                                ->pattern('+3706{0000000}') // Enforce +3706 followed by exactly 7 digits
+                                ->numeric()                  // Restrict input to numbers only
+                            )
+                            ->nullable(),
 
-                        DatePicker::make('date_of_birth')
+                            Flatpickr::make('date_of_birth')
                             ->label('Date of Birth')
+                            ->required()
+                            ->dateFormat('Y-m-d')        
                             ->nullable()
                             ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
@@ -94,14 +97,20 @@ class UserResource extends Resource
                             ->nullable(),
 
                         TextInput::make('emergency_contact_name')
-                            ->label('Emergency Contact Name')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
+                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value)
+                            ->label('Emergency Contact Name'),
 
-                        TextInput::make('emergency_contact_phone')
+                        PhoneInput::make('emergency_contact_phone')
                             ->tel()
                             ->label('Emergency Contact Phone')
                             ->nullable()
+                            ->initialCountry('LT') // Set initial country to Lithuania
+                            ->default('+3706')     // Prefill with +3706
+                            ->mask(fn (TextInput\Mask $mask) => $mask
+                                ->pattern('+3706{0000000}') // Enforce +3706 followed by exactly 7 digits
+                                ->numeric()                  // Restrict input to numbers only
+                            )
                             ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
                         FileUpload::make('profile_picture')
@@ -142,28 +151,15 @@ class UserResource extends Resource
                     ])
                     ->columns(2),
 
-                // New Roles Section
-                Section::make('Role Assignment')
+                    Section::make('Roles')
                     ->schema([
-                        Select::make('roles')
-                            ->label('Assign Roles')
-                            ->multiple() // Allow multiple roles
-                            ->options(function () {
-                                return Role::all()->pluck('name', 'name')->toArray();
-                            })
-                            ->preload() // Preload options for better UX
-                            ->default(fn ($record) => $record ? $record->roles->pluck('name')->toArray() : [])
-                            ->afterStateUpdated(function ($state, $record) {
-                                if ($record) {
-                                    $record->syncRoles($state);
-                                }
-                            })
-                            ->dehydrated(false) // Prevent storing in the main form state
-                            ->saveRelationshipsUsing(function ($record, $state) {
-                                $record->syncRoles($state);
-                            }),
-                    ])
-                    ->collapsible(),
+                        CheckboxList::make('roles')
+                            ->label('Roles')
+                            ->relationship('roles', 'name')
+                            ->searchable()
+                            ->bulkToggleable()
+                            ->columns(4),
+                    ]),
             ]);
     }
 
@@ -193,6 +189,7 @@ class UserResource extends Resource
                 TextColumn::make('date_of_birth')
                     ->date()
                     ->label('Date of Birth'),
+                    
                 TextColumn::make('preferred_roles')
                     ->label('Preferred Roles'),
                 TextColumn::make('languages')

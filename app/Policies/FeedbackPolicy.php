@@ -2,18 +2,28 @@
 
 namespace App\Policies;
 
+use App\Enums\PermissionTypeEnum;
 use App\Models\Feedback;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
-class Feedback
+class FeedbackPolicy
 {
+    public const PERMISSIONS = [
+        ['name' => 'feedback.view-any', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'feedback.view', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'feedback.create', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'feedback.edit', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'feedback.delete', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'feedback.restore', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'feedback.force-delete', 'type' => PermissionTypeEnum::WEB],
+    ];
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasPermissionTo('feedback.view-any');
     }
 
     /**
@@ -21,7 +31,7 @@ class Feedback
      */
     public function view(User $user, Feedback $feedback): bool
     {
-        return true;
+        return $user->hasPermissionTo('feedback.view');
     }
 
     /**
@@ -29,7 +39,7 @@ class Feedback
      */
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasPermissionTo('feedback.create');
     }
 
     /**
@@ -37,7 +47,7 @@ class Feedback
      */
     public function update(User $user, Feedback $feedback): bool
     {
-        return true;
+        return $user->hasPermissionTo('feedback.edit');
     }
 
     /**
@@ -45,7 +55,7 @@ class Feedback
      */
     public function delete(User $user, Feedback $feedback): bool
     {
-        return true;
+        return $user->hasPermissionTo('feedback.delete');
     }
 
     /**
@@ -53,7 +63,7 @@ class Feedback
      */
     public function restore(User $user, Feedback $feedback): bool
     {
-        return true;
+        return $user->hasPermissionTo('feedback.restore');
     }
 
     /**
@@ -61,6 +71,6 @@ class Feedback
      */
     public function forceDelete(User $user, Feedback $feedback): bool
     {
-        return true;
+        return $user->hasPermissionTo('feedback.force-delete');
     }
 }

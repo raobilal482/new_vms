@@ -3,9 +3,11 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Enums\UserTypeEnum;
+use App\Models\Role;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Component;
 use Filament\Pages\Auth\Register as BaseRegister;
+use Illuminate\Support\Facades\Hash;
 
 class CustomRegister extends BaseRegister
 {
@@ -37,5 +39,25 @@ class CustomRegister extends BaseRegister
             ])
             ->default(UserTypeEnum::VOLUNTEER->value)
             ->required();
+    }
+    protected function handleRegistration(array $data): \Illuminate\Foundation\Auth\User
+    {
+        // Create the user
+        $user = $this->getUserModel()::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'type' => $data['type'], // Assuming your User model has a 'type' column
+        ]);
+
+        // Check if a role exists matching the selected type and assign it
+        $roleName = strtolower($data['type']); // e.g., "volunteer" or "event_organizer"
+        $role = Role::where('name', $roleName)->first();
+
+        if ($role) {
+            $user->assignRole($role);
+        }
+
+        return $user;
     }
 }

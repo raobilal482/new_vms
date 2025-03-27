@@ -2,18 +2,28 @@
 
 namespace App\Policies;
 
-use App\Models\Role;
+use App\Enums\PermissionTypeEnum;
+use App\Models\Role; // Your custom Role model or Spatie's Role
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RolePolicy
 {
+    public const PERMISSIONS = [
+        ['name' => 'role.view-any', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'role.view', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'role.create', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'role.edit', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'role.delete', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'role.restore', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'role.force-delete', 'type' => PermissionTypeEnum::WEB],
+    ];
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view role');
+        return $user->hasPermissionTo('role.view-any');
     }
 
     /**
@@ -21,7 +31,7 @@ class RolePolicy
      */
     public function view(User $user, Role $role): bool
     {
-        return $user->can('view role');
+        return $user->hasPermissionTo('role.view');
     }
 
     /**
@@ -29,7 +39,7 @@ class RolePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create role');
+        return $user->hasPermissionTo('role.create');
     }
 
     /**
@@ -37,7 +47,7 @@ class RolePolicy
      */
     public function update(User $user, Role $role): bool
     {
-        return $user->can('edit role');
+        return $user->hasPermissionTo('role.edit');
     }
 
     /**
@@ -45,7 +55,7 @@ class RolePolicy
      */
     public function delete(User $user, Role $role): bool
     {
-        return $user->can('delete role');
+        return $user->hasPermissionTo('role.delete');
     }
 
     /**
@@ -53,7 +63,7 @@ class RolePolicy
      */
     public function restore(User $user, Role $role): bool
     {
-        return $user->can('edit role'); // Assuming restore falls under edit permission
+        return $user->hasPermissionTo('role.restore');
     }
 
     /**
@@ -61,6 +71,6 @@ class RolePolicy
      */
     public function forceDelete(User $user, Role $role): bool
     {
-        return $user->can('delete role'); // Assuming force delete falls under delete permission
+        return $user->hasPermissionTo('role.force-delete');
     }
 }
