@@ -16,6 +16,7 @@ class EventPolicy
         ['name' => 'event.delete', 'type' => PermissionTypeEnum::WEB],
         ['name' => 'event.restore', 'type' => PermissionTypeEnum::WEB],
         ['name' => 'event.force-delete', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.whilelist-action', 'type' => PermissionTypeEnum::WEB],
     ];
 
     /**
@@ -72,5 +73,10 @@ class EventPolicy
     public function forceDelete(User $user, Event $event): bool
     {
         return $user->hasPermissionTo('event.force-delete');
+    }
+
+    public function whitelistAction(User $user): bool
+    {
+        return $user->hasPermissionTo('event.whilelist-action');
     }
 }

@@ -59,7 +59,7 @@ class EventResource extends Resource
                     Flatpickr::make('end_time')
                         ->label('End Time')
                         ->required()
-                        ->dateFormat('Y-m-d'),            
+                        ->dateFormat('Y-m-d'),
                     TextInput::make('max_volunteers')
                         ->label('Max Volunteers')
                         ->numeric()
@@ -128,17 +128,8 @@ class EventResource extends Resource
                         ->numeric()
                         ->nullable(),
                     Checkbox::make('whitelist')
-                        ->label('Whitelist'),
-                    // Optional: If you want to show is_approved in the form (hidden by default)
-                    // Select::make('is_approved')
-                    //     ->label('Approval Status')
-                    //     ->options([
-                    //         'Pending' => 'Pending',
-                    //         'Approved' => 'Approved',
-                    //         'Rejected' => 'Rejected',
-                    //     ])
-                    //     ->default('Pending')
-                    //     ->disabled(), // Prevents manual editing
+                        ->label('Whitelist')
+                        ->visible(fn () => Auth::user()->can('event.whitelist-action')),
                 ])
                 ->columns(2),
         ]);
@@ -160,10 +151,16 @@ class EventResource extends Resource
                                     ->orWhereNull('is_approved');
                           })
                           ->orWhere('whitelist', true)
-                          ->orWhere('is_approved', 'Rejected')
-                          ;
+                          ->orWhere('is_approved', 'Rejected');
                 });
             }
+            if($user->type == UserTypeEnum::VOLUNTEER->value) {
+                return $query->where('is_approved', 'Approved');
+            }
+            if($user->type == UserTypeEnum::MANAGER->value) {
+                return $query->where('is_approved', 'Pending');
+            }
+            return $query;
 
         })
             ->columns([
@@ -226,12 +223,14 @@ class EventResource extends Resource
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->visible(fn (Event $record) => $record->created_by == auth()->user()->id),
+                    Tables\Actions\DeleteAction::make()
+                    ->visible(fn (Event $record) => $record->created_by == auth()->user()->id),
                     Tables\Actions\Action::make('manage_approval')
                         ->label('Manage Approval')
                         ->icon('heroicon-o-check-circle')
-                        ->visible(fn (Event $record) => auth()->user()->type === 'Admin' && $record->is_approved !== 'Approved') // Hide if Approved
+                        ->visible(fn (Event $record) => auth()->user()->type === 'Admin' && $record->is_approved !== 'Approved' || auth()->user()->type === UserTypeEnum::MANAGER->value && $record->is_approved !== 'Approved') // Hide if Approved
                         ->form([
                             Select::make('action')
                                 ->label('Action')
