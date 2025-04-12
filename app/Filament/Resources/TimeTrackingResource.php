@@ -155,6 +155,9 @@ class TimeTrackingResource extends Resource
                             $record->update([
                                 'checkin_time' => $data['checkin_time'],
                             ]);
+                            $record->task->update([
+                                'status' => 'in progress',
+                            ]);
                         }),
 
                     // Check Out Action
@@ -192,6 +195,9 @@ class TimeTrackingResource extends Resource
                                 'break_duration_minutes' => $data['break_duration_minutes'],
                                 'break_included' => $data['break_included'],
                                 'hours_logged' => $hours,
+                            ]);
+                            $record->task->update([
+                                'status' => 'completed',
                             ]);
                         }),
                 ]),

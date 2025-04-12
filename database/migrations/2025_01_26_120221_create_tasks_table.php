@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->string('status')->default('assigned');
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Foreign key to user (creator)
             $table->timestamps();
         });
 

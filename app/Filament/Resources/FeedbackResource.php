@@ -52,21 +52,21 @@ class FeedbackResource extends Resource
                     ->nullable()
                     ->visible(fn ($get) => $get('feedback_type') === 'task'), // Only show if feedback_type is 'task'
 
-                Select::make('volunteer_id')
+                Select::make('receiver_id')
                     ->label('Volunteer')
                     ->options(\App\Models\User::where('type',UserTypeEnum::VOLUNTEER->value)->pluck('name', 'id')) // Adjust based on your User model logic
                     ->searchable()
                     ->nullable()
                     ->visible(fn ($get) => $get('feedback_type') === UserTypeEnum::VOLUNTEER->value), // Only show if feedback_type is 'volunteer'
 
-                Select::make('organizer_id')
+                Select::make('receiver_id')
                     ->label('Event Organizer')
                     ->options(\App\Models\User::where('type', UserTypeEnum::EVENT_ORGANIZER->value)->pluck('name', 'id')) // Adjust based on your User model logic
                     ->searchable()
                     ->nullable()
                     ->visible(fn ($get) => $get('feedback_type') === UserTypeEnum::EVENT_ORGANIZER->value), // Only show if feedback_type is 'organizer'
 
-                Select::make('manager_id')
+                Select::make('receiver_id')
                     ->label('Manager')
                     ->options(\App\Models\User::where('type', UserTypeEnum::MANAGER->value)->pluck('name', 'id')) // Adjust based on your User model logic
                     ->searchable()

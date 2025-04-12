@@ -50,7 +50,7 @@
             <div class="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
                 <a href="#" class="flex items-center">
                     <img src="{{asset('assets/h/images/logo.svg')}}" class="h-6 mr-3 sm:h-9" alt="Landwind Logo" />
-                    <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">Landwind</span>
+                    <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">VMS</span>
                 </a>
                 <div class="flex items-center lg:order-2">
                     <button>
@@ -262,9 +262,9 @@
         <div class="text-center">
             <a href="#" class="flex items-center justify-center mb-5 text-2xl font-semibold text-gray-900 dark:text-white">
                 <img src="{{ asset('assets/h/images/logo.svg') }}" class="h-6 mr-3 sm:h-9" alt="Volunteer Management Logo" />
-                VolunteerHub    
+                VMS  
             </a>
-            <span class="block text-sm text-center text-gray-500 dark:text-gray-400">© 2024-2025 VolunteerHub™. All Rights Reserved. Developed by <a href="https://facebook.com/rao.bilal.167" class="text-purple-600 hover:underline dark:text-purple-500">Rao Bilal</a></span>
+            <span class="block text-sm text-center text-gray-500 dark:text-gray-400">© 2024-2025 VolunteerHub™. All Rights Reserved. Developed by <a href="#" class="text-purple-600 hover:underline dark:text-purple-500">Deived</a></span>
             
             <!-- Social Media Links -->
             <ul class="flex justify-center mt-5 space-x-5">

@@ -11,44 +11,54 @@ use App\Models\Tenancy;
 use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardWidgets extends StatsOverviewWidget
 {
     protected function getStats(): array
     {
+        $user = Auth::user();
+        $stats = [];
 
-        $TotalEvents = Event::count();
+        // Base stats for all users (will be filtered later)
+        $totalEventsQuery = Event::query();
+        $approvedEventsQuery = Event::where('is_approved', 'Approved');
+        $notApprovedEventsQuery = Event::where('is_approved', 'Pending');
+        $totalTasksQuery = Task::query();
+        $totalVolunteers = User::where('type', UserTypeEnum::VOLUNTEER->value)->count();
+        $totalEventOrganizers = User::where('type', UserTypeEnum::EVENT_ORGANIZER->value)->count();
+        $totalManagers = User::where('type', UserTypeEnum::MANAGER->value)->count();
 
-        $ApprovedEvents = Event::where('is_approved', 'Approved')->count();
+        // For Event Organizers, filter events and tasks by their user ID
+        if ($user->type === UserTypeEnum::EVENT_ORGANIZER->value) {
+            $totalEventsQuery->where('created_by', $user->id);
+            $approvedEventsQuery->where('created_by', $user->id);
+            $notApprovedEventsQuery->where('created_by', $user->id);
+            $totalTasksQuery->where('created_by', $user->id);
+        }
 
-        $NotApprovedEvents = Event::where('is_approved', 'Pending')->count();
+        // Calculate counts
+        $totalEvents = $totalEventsQuery->count();
+        $approvedEvents = $approvedEventsQuery->count();
+        $notApprovedEvents = $notApprovedEventsQuery->count();
+        $totalTasks = $totalTasksQuery->count();
 
-        $TotalTasks = Task::count();
+        // Common stats for all users
+        $stats[] = Stat::make('Total Events', $totalEvents ?? 0);
+        $stats[] = Stat::make('Approved Events', $approvedEvents ?? 0);
+        $stats[] = Stat::make('Total Tasks', $totalTasks ?? 0);
+        $stats[] = Stat::make('All Volunteers', $totalVolunteers ?? 0);
+        $stats[] = Stat::make('All Event Organizers', $totalEventOrganizers ?? 0);
+        $stats[] = Stat::make('All Managers', $totalManagers ?? 0);
 
-        $totalVolunteers = User::where('type',UserTypeEnum::VOLUNTEER->value)->count();
+        // Add "Not Approved Events" only for Admins and Event Organizers
+        if ($user->type !== UserTypeEnum::VOLUNTEER->value) {
+            $stats[] = Stat::make('Not Approved Events', $notApprovedEvents ?? 0);
+        }
 
-        $totalEventOrganizers = User::where('type',UserTypeEnum::EVENT_ORGANIZER->value)->count();
+        // For Admins, ensure all stats are included (already handled by default queries)
+        // No additional logic needed since queries are unfiltered for Admins
 
-        $totalManagers = User::where('type',UserTypeEnum::MANAGER->value)->count();
-
-
-
-        return [
-            Stat::make('Total Events', $TotalEvents ?? 0),
-
-            Stat::make('Approved Events', $ApprovedEvents ?? 0),
-
-            Stat::make('Not Approved Events', $NotApprovedEvents ?? 0),
-
-            Stat::make('Total Tasks', $TotalTasks ?? 0),
-
-            Stat::make('All Volunteers', $totalVolunteers ?? 0),
-
-            Stat::make('All Event Organizers', $totalEventOrganizers ?? 0),
-
-            Stat::make('All Managers', $totalManagers ?? 0),
-
-
-        ];
+        return $stats;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EventResource\Pages;
 
+use App\Enums\UserTypeEnum;
 use App\Filament\Resources\EventResource;
 use Filament\Actions;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -29,7 +30,7 @@ class ViewEvent extends ViewRecord
                     ->label('Location'),
                     TextEntry::make('start_time')
                     ->label('Start Time')
-                    ->formatStateUsing(fn ($state) => date('g:i A', strtotime($state))),    
+                    ->formatStateUsing(fn ($state) => date('g:i A', strtotime($state))),
                 TextEntry::make('end_time')
                     ->label('End Time')
                     ->date(),
@@ -135,7 +136,13 @@ Section::make('Volunteer Information')
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
+            Actions\EditAction::make()
+            ->visible(function (){
+                if(auth()->user()->type == UserTypeEnum::MANAGER->value){
+                    return false;
+                }
+                return true;
+            }),
         ];
     }
 }

@@ -45,11 +45,21 @@ class TaskResource extends Resource
                 ->required()
                 ->maxLength(255),
 
-            Select::make('event_id')
-            ->label('Event')
-            ->relationship('event', 'title')
-                ->required(),
+                Select::make('event_id')
+                    ->label('Event')
+                    ->relationship(
+                        name: 'event',
+                        titleAttribute: 'title',
+                        modifyQueryUsing: function ($query) {
+                            $user = auth()->user();
+                            if ($user->type === UserTypeEnum::EVENT_ORGANIZER->value) {
 
+                                return $query->where('created_by', $user->id)
+                                ->where('is_approved', 'Approved');
+                            }
+                        }
+                    )
+                    ->required(),
                 // Multi-select for volunteers (many-to-many relation)
                 Select::make('volunteers')
                 ->label('Assign Volunteers')
@@ -86,10 +96,18 @@ class TaskResource extends Resource
                         'assigned' => 'Assigned',
                         'in progress' => 'In Progress',
                         'completed' => 'Completed',
+                        'task picked' => 'Task Picked',
+                        default => 'Unknown',
                     })
                     ->sortable()
                     ->badge()
-                    ,
+                    ->color(fn (string $state): string => match ($state) {
+                        'assigned' => 'gray',
+                        'pending' => 'gray',
+                        'in progress' => 'warning',
+                        'completed' => 'success',
+                        'task picked' => 'info',
+                    }),
 
                 // Display the related event's title
                 TextColumn::make('event.title')
@@ -147,6 +165,8 @@ class TaskResource extends Resource
                     Tables\Actions\Action::make('pick_task')
                     ->label('Pick Task')
                     ->visible(fn () => Auth::user()->type === UserTypeEnum::VOLUNTEER->value) // Only visible to volunteers
+                    ->hidden(condition: fn (Task $record) => $record->status == 'completed' || $record->status == 'task picked' || $record->status == 'in progress') // Only show if the task is assigned
+                    ->icon('heroicon-o-check')
                     ->requiresConfirmation() // Shows a confirmation modal
                     ->modalHeading('Pick This Task')
                     ->modalDescription('Do you want to pick this task? This will start time tracking.')
@@ -156,7 +176,7 @@ class TaskResource extends Resource
                         $volunteer = Auth::user();
 
                         // Create TimeTracking record
-                        TimeTracking::create([
+                        $timetracking = TimeTracking::create([
                             'volunteer_id' => $volunteer->id,
                             'task_id' => $record->id,
                             'checkin_time' => null,
@@ -166,12 +186,15 @@ class TaskResource extends Resource
                             'hours_logged' => 0,
                         ]);
 
-                        // Send notification to the volunteer
-                        Notification::make()
-                            ->title('Task Picked')
-                            ->body('Time tracking created. Please check in before doing this task.')
-                            ->success()
-                            ->sendToDatabase($volunteer);
+                        $timetracking->task->update([
+                            'status' => 'task picked',
+                        ]);
+
+                        \Filament\Notifications\Notification::make()
+                        ->title('Task Picked')
+                        ->body('Time tracking created. Please check in before doing this task.')
+                        ->success()
+                        ->send();
                     })
                     ->color('success'), // Green button
                 ]),

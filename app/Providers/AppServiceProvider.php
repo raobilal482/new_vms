@@ -28,7 +28,8 @@ class AppServiceProvider extends ServiceProvider
                 ->locales(['lt','en'])
                 ->displayLocale('en')
                 ->visible(outsidePanels: true)
-                ;
+                ->visible(insidePanels: true);
+                
 
         });
     }

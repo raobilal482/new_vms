@@ -120,7 +120,7 @@ class EventResource extends Resource
                         ->nullable(),
                     Checkbox::make('whitelist')
                         ->label('Whitelist')
-                        ->visible(fn () => Auth::user()->can('event.whitelist-action')),
+                        ->visible(fn () => Auth::user()->type === UserTypeEnum::EVENT_ORGANIZER->value) // Only visible to event organizers ,
                 ])
                 ->columns(2),
         ]);
@@ -131,25 +131,42 @@ class EventResource extends Resource
         ->modifyQueryUsing(function (Builder $query) {
             $user = auth()->user();
             if ($user->type === 'Admin' || $user->hasRole('Admin')) {
-                $query->where('whitelist', false);
+                $query->where('whitelist', false)
+                    ->orWhere('whitelist',Null);
+                // dd($user->type);
                 return $query;
             }
-            if($user->type !== 'Admin') {
-                return $query->where(function (Builder $query) use ($user) {
+            // if($user->type !== 'Admin') {
+            //     return $query->where(function (Builder $query) use ($user) {
+            //         $query->where('created_by', $user->id)
+            //               ->where(function ($query) {
+            //                   $query->where('is_approved', 'Approved')
+            //                         ->orWhereNull('is_approved');
+            //               })
+            //               ->orWhere('whitelist', true)
+            //               ->orWhere('is_approved', 'Rejected');
+            //     });
+            // }
+            if($user->type == UserTypeEnum::VOLUNTEER->value) {
+                return $query->where('is_approved', 'Approved');
+            }
+            if($user->type == UserTypeEnum::MANAGER->value) {
+                return $query->where('is_approved', 'Pending')
+                ->where('whitelist', false);;
+            }
+            if($user->type == UserTypeEnum::EVENT_ORGANIZER->value) {
+                    return $query->where(function (Builder $query) use ($user) {
                     $query->where('created_by', $user->id)
                           ->where(function ($query) {
                               $query->where('is_approved', 'Approved')
                                     ->orWhereNull('is_approved');
                           })
                           ->orWhere('whitelist', true)
-                          ->orWhere('is_approved', 'Rejected');
+                          ->where('created_by', $user->id)
+                          ->orWhere('is_approved', 'Rejected')
+                          ->where('created_by', $user->id)
+                          ;
                 });
-            }
-            if($user->type == UserTypeEnum::VOLUNTEER->value) {
-                return $query->where('is_approved', 'Approved');
-            }
-            if($user->type == UserTypeEnum::MANAGER->value) {
-                return $query->where('is_approved', 'Pending');
             }
             return $query;
 
@@ -317,7 +334,8 @@ class EventResource extends Resource
             ])
             ->headerActions([])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                ->visible(fn (Event $record) => $record->created_by == auth()->user()->id),
             ]);
     }
     public static function getRelations(): array
