@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->text('description');
-            $table->string('status')->default('assigned');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Foreign key to user (creator)
+            $table->text('description')->nullable();
+            $table->string('status')->default('Not Picked');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('cascade'); // Foreign key to user (creator)
             $table->timestamps();
         });
 

@@ -34,4 +34,8 @@ class Event extends Model
     {
         return $this->hasMany(Feedback::class, 'event_id');
     }
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'event_id');
+    }
 }

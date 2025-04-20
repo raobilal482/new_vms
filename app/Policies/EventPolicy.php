@@ -16,7 +16,7 @@ class EventPolicy
         ['name' => 'event.delete', 'type' => PermissionTypeEnum::WEB],
         ['name' => 'event.restore', 'type' => PermissionTypeEnum::WEB],
         ['name' => 'event.force-delete', 'type' => PermissionTypeEnum::WEB],
-        ['name' => 'event.whilelist-action', 'type' => PermissionTypeEnum::WEB],
+        ['name' => 'event.whitelist-action', 'type' => PermissionTypeEnum::WEB],
     ];
 
     /**

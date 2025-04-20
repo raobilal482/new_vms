@@ -57,6 +57,7 @@ class TaskResource extends Resource
                                 return $query->where('created_by', $user->id)
                                 ->where('is_approved', 'Approved');
                             }
+                            return $query->where('is_approved', 'Approved');
                         }
                     )
                     ->required(),

@@ -46,7 +46,7 @@ class CustomRegister extends BaseRegister
         $user = $this->getUserModel()::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => $data['password'],
             'type' => $data['type'], // Assuming your User model has a 'type' column
         ]);
 

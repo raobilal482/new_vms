@@ -5,10 +5,15 @@ namespace App\Filament\Resources;
 use AbanoubNassem\FilamentPhoneField\Forms\Components\PhoneInput;
 use App\Enums\UserTypeEnum;
 use App\Filament\Resources\EventResource\Pages;
+use App\Filament\Resources\EventResource\RelationManagers\EventOrganizerRelationManager;
+use App\Filament\Resources\EventResource\RelationManagers\ManagerRelationManager;
+use App\Filament\Resources\EventResource\RelationManagers\TasksRelationManager;
+use App\Filament\Resources\EventResource\RelationManagers\VolunteersRelationManager;
 use App\Models\Event;
 use Coolsam\FilamentFlatpickr\Forms\Components\Flatpickr;
 use Filament\Forms;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -81,7 +86,7 @@ class EventResource extends Resource
                         ->label('Manager')
                         ->relationship('manager', 'name')
                         ->nullable(),
-                        Select::make('volunteer_id') // Note: Should match the relationship name 'volunteers'
+                    Select::make('volunteer_id') // Note: Should match the relationship name 'volunteers'
                         ->label('Volunteers')
                         ->relationship('volunteers', 'name') // Use 'volunteers' not 'volunteer_id'
                         ->multiple() // Since it's a many-to-many relationship
@@ -120,10 +125,22 @@ class EventResource extends Resource
                         ->nullable(),
                     Checkbox::make('whitelist')
                         ->label('Whitelist')
-                        ->visible(fn () => Auth::user()->type === UserTypeEnum::EVENT_ORGANIZER->value) // Only visible to event organizers ,
+                        ->visible(fn () => Auth::user()->can('event.whilelist-action')) // Only visible to event organizers ,
                 ])
                 ->columns(2),
-        ]);
+                Repeater::make('tasks')
+                ->label('Add New Tasks')
+                ->relationship('tasks')
+                ->createItemButtonLabel('Add More Task')
+                ->schema([
+                    TextInput::make('title')
+                        ->label('Task Titile'),
+                    Textarea::make('description')
+                        ->label('Task Description'),
+
+                ])
+                ->columnSpanFull()
+                            ]);
     }
     public static function table(Tables\Table $table): Tables\Table
     {
@@ -341,7 +358,10 @@ class EventResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TasksRelationManager::class,
+            EventOrganizerRelationManager::class,
+            ManagerRelationManager::class,
+            VolunteersRelationManager::class
         ];
     }
 

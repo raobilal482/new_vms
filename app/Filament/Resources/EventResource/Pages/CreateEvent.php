@@ -4,7 +4,11 @@ namespace App\Filament\Resources\EventResource\Pages;
 
 use App\Filament\Resources\EventResource;
 use Filament\Actions;
+use Filament\Actions\Action as ActionsAction;
+use Filament\Actions\Modal\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Broadcasting\Broadcasters\NullBroadcaster;
 
 class CreateEvent extends CreateRecord
 {
@@ -16,6 +20,8 @@ class CreateEvent extends CreateRecord
 
     return $data;
 }
+
+
 protected function getRedirectUrl(): string
 {
     return $this->getResource()::getUrl('index');
