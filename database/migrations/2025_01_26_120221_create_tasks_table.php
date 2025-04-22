@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('status')->default('Not Picked');
+            $table->string('rejection_reason')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('cascade'); // Foreign key to user (creator)
             $table->timestamps();
         });

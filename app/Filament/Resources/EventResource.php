@@ -10,6 +10,7 @@ use App\Filament\Resources\EventResource\RelationManagers\ManagerRelationManager
 use App\Filament\Resources\EventResource\RelationManagers\TasksRelationManager;
 use App\Filament\Resources\EventResource\RelationManagers\VolunteersRelationManager;
 use App\Models\Event;
+use App\Models\Task;
 use Coolsam\FilamentFlatpickr\Forms\Components\Flatpickr;
 use Filament\Forms;
 use Filament\Forms\Components\Checkbox;
@@ -31,6 +32,11 @@ class EventResource extends Resource
     protected static ?string $navigationLabel = 'Events';
     protected static ?string $pluralLabel = 'Events';
     protected static ?string $slug = 'events';
+
+    public static function getNavigationBadge(): ?string
+{
+    return static::getModel()::count();
+}
 
     public static function form(Form $form): Form
     {
@@ -134,7 +140,8 @@ class EventResource extends Resource
                 ->createItemButtonLabel('Add More Task')
                 ->schema([
                     TextInput::make('title')
-                        ->label('Task Titile'),
+                        ->label('Task Titile')
+                        ->required(),
                     Textarea::make('description')
                         ->label('Task Description'),
 
@@ -344,6 +351,75 @@ class EventResource extends Resource
 
                     })
                     ->color('success'),
+
+                    Tables\Actions\Action::make('register_for_event')
+                        ->label('Register for Event')
+                        ->icon('heroicon-o-user-plus')
+                        ->visible(fn (Event $record) => Auth::user()->type === UserTypeEnum::VOLUNTEER->value && !$record->volunteers->contains(Auth::user()->id) && $record->status === 'Upcoming' && $record->is_approved === 'Approved')
+                        ->form([
+                            Select::make('task_ids')
+                                ->label('Select Tasks')
+                                ->options(fn (Event $record) => $record->tasks->pluck('title', 'id')->toArray())
+                                ->multiple()
+                                ->required()
+                                ->searchable()
+                                ->preload(),
+                        ])
+                        ->action(function (Event $record, array $data) {
+                            $volunteer = Auth::user();
+
+                            // Validate that selected tasks belong to the event
+                            $validTaskIds = $record->tasks->pluck('id')->toArray();
+                            $selectedTaskIds = $data['task_ids'];
+                            if (array_diff($selectedTaskIds, $validTaskIds)) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Invalid Task Selection')
+                                    ->body('One or more selected tasks do not belong to this event.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            // Check if max_volunteers limit is reached
+                            if ($record->max_volunteers <= $record->volunteers->count()) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Registration Failed')
+                                    ->body('The maximum number of volunteers for this event has been reached.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            // Attach the volunteer to the event
+                            $record->volunteers()->syncWithoutDetaching([$volunteer->id => ['created_at' => now()]]);
+
+                            // Update selected tasks' status to 'picked' and insert into task_volunteer table
+                            foreach ($selectedTaskIds as $taskId) {
+                                // Update task status
+                                Task::where('id', $taskId)->update(['status' => 'waiting_for_approval']);
+
+                                // Insert into task_volunteer table
+                                \DB::table('task_volunteer')->updateOrInsert(
+                                    [
+                                        'task_id' => $taskId,
+                                        'volunteer_id' => $volunteer->id,
+                                    ],
+                                    ['created_at' => now(), 'updated_at' => now()]
+                                );
+                            }
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Successfully Registered')
+                                ->body('You have been registered for the event with the selected tasks.')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Register for Event')
+                        ->modalDescription('Select the tasks you would like to participate in.')
+                        ->modalSubmitActionLabel('Register')
+                        ->modalCancelActionLabel('Cancel')
+                        ->modalWidth('lg')
+                        ->color('primary'),
 
                 ])
                 ->label('Actions')

@@ -27,7 +27,10 @@ class TimeTrackingResource extends Resource
     protected static ?string $model = TimeTracking::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
     public static function calculateHours($checkin, $checkout, $breakIncluded, $breakMinutes)
     {
         if (!$checkin || !$checkout) {

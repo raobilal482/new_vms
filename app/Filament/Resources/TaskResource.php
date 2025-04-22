@@ -28,6 +28,12 @@ class TaskResource extends Resource
 
     protected static ?string $navigationLabel = 'Tasks';
     protected static ?string $navigationIcon = 'heroicon-s-calendar';
+
+    public static function getNavigationBadge(): ?string
+{
+    return static::getModel()::count();
+}
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -76,8 +82,13 @@ class TaskResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->modifyQueryUsing(function (Builder $query) {
+            $query->whereHas('event', function (Builder $eventQuery) {
+                $eventQuery->where('is_approved', 'Approved');
+            });
+            $query->where('status', '!=', 'Not Picked');
+        })
         ->columns([
-                // Display the task description
 
                 TextColumn::make('title')
                 ->label('Task Title')
@@ -94,20 +105,28 @@ class TaskResource extends Resource
                 TextColumn::make('status')
                     ->label('Task Status')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'Accepted' => 'Accepted',
+                        'waiting_for_approval' => 'Waiting for Approval',
+                        'Not Picked' => 'Not Picked',
                         'assigned' => 'Assigned',
                         'in progress' => 'In Progress',
                         'completed' => 'Completed',
                         'task picked' => 'Task Picked',
+                        'reject' => 'Rejected',
                         default => 'Unknown',
                     })
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
+                        'Accepted' => 'success',
+                        'waiting_for_approval' => 'info',
+                        'Not Picked' => 'danger',
                         'assigned' => 'gray',
                         'pending' => 'gray',
                         'in progress' => 'warning',
                         'completed' => 'success',
                         'task picked' => 'info',
+                        'rejected' => 'danger'
                     }),
 
                 // Display the related event's title
@@ -165,8 +184,9 @@ class TaskResource extends Resource
 
                     Tables\Actions\Action::make('pick_task')
                     ->label('Pick Task')
-                    ->visible(fn () => Auth::user()->type === UserTypeEnum::VOLUNTEER->value) // Only visible to volunteers
-                    ->hidden(condition: fn (Task $record) => $record->status == 'completed' || $record->status == 'task picked' || $record->status == 'in progress') // Only show if the task is assigned
+                    ->visible(fn () => Auth::user()->type === UserTypeEnum::VOLUNTEER->value)
+                    // ->visible(fn (Task $record) => $record->status === 'Accecpted' || $record->status == 'Not Picked') // Only visible to volunteers
+                    ->hidden(condition: fn (Task $record) => $record->status == 'completed' || $record->status == 'task picked' || $record->status == 'in progress' || $record->status =='rejected') // Only show if the task is assigned
                     ->icon('heroicon-o-check')
                     ->requiresConfirmation() // Shows a confirmation modal
                     ->modalHeading('Pick This Task')
@@ -198,6 +218,55 @@ class TaskResource extends Resource
                         ->send();
                     })
                     ->color('success'), // Green button
+
+                    Tables\Actions\Action::make('manage_task_approval')
+                    ->label('Manage Task Approval')
+                    ->icon('heroicon-o-check-circle')
+                    ->visible(fn (Task $record) => Auth::user()->type !== UserTypeEnum::VOLUNTEER->value && $record->status === 'waiting_for_approval') // Only show if the task is waiting for approval
+                    ->form([
+                        Select::make('action')
+                            ->label('Action')
+                            ->options([
+                                'accept' => 'Accept',
+                                'reject' => 'Reject',
+                            ])
+                            ->required()
+                            ->live(),
+                        Textarea::make('rejection_reason')
+                            ->label('Rejection Reason')
+                            ->required(fn ($get) => $get('action') === 'reject')
+                            ->hidden(fn ($get) => $get('action') === 'accept' || !$get('action'))
+                            ->maxLength(500),
+                    ])
+                    ->action(function (Task $record, array $data) {
+                        if ($data['action'] === 'accept') {
+                            $record->update([
+                                'status' => 'Accepted',
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Task Accepted')
+                                ->body('The task has been approved and is now in progress.')
+                                ->success()
+                                ->send();
+                        } elseif ($data['action'] === 'reject') {
+                            $record->update([
+                                'status' => 'rejected',
+                                'rejection_reason' => $data['rejection_reason'],
+                            ]);
+                            // Optionally, notify the volunteer who picked the task
+                            \Filament\Notifications\Notification::make()
+                                ->title('Task Rejected')
+                                ->body('Reason: ' . $data['rejection_reason'])
+                                ->warning()
+                                ->send();
+                        }
+                    })
+                    ->modalHeading('Manage Task Approval')
+                    ->modalSubmitActionLabel('Confirm')
+                    ->modalCancelActionLabel('Cancel')
+                    ->modalWidth('lg')
+                    ->color('primary'),
+
                 ]),
             ])
             ->bulkActions([

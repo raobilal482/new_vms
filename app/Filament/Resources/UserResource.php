@@ -33,7 +33,10 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-s-user-group';
-
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
@@ -77,7 +80,7 @@ class UserResource extends Resource
                             Flatpickr::make('date_of_birth')
                             ->label('Date of Birth')
                             ->required()
-                            ->dateFormat('Y-m-d')        
+                            ->dateFormat('Y-m-d')
                             ->nullable()
                             ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
 
@@ -189,7 +192,7 @@ class UserResource extends Resource
                 TextColumn::make('date_of_birth')
                     ->date()
                     ->label('Date of Birth'),
-                    
+
                 TextColumn::make('preferred_roles')
                     ->label('Preferred Roles'),
                 TextColumn::make('languages')

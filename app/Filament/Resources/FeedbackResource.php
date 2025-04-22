@@ -19,6 +19,11 @@ class FeedbackResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
+    public static function getNavigationBadge(): ?string
+{
+    return static::getModel()::count();
+}
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
