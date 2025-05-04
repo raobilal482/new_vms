@@ -14,6 +14,7 @@ use App\Models\Task;
 use Coolsam\FilamentFlatpickr\Forms\Components\Flatpickr;
 use Filament\Forms;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -24,6 +25,10 @@ use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Support\Enums\Alignment;
+use Filament\Tables\Columns\TextColumn;
 
 class EventResource extends Resource
 {
@@ -134,6 +139,15 @@ class EventResource extends Resource
                         ->visible(fn () => Auth::user()->can('event.whilelist-action')) // Only visible to event organizers ,
                 ])
                 ->columns(2),
+                SpatieMediaLibraryFileUpload::make('images')
+                    ->label('Images')
+                    ->collection('images')
+                    ->multiple()
+                    ->columnSpanFull()
+                    ->preserveFilenames()
+                    ->image()
+                    ->maxFiles(5)
+                    ->enableReordering(), // Restrict to image files),
                 Repeater::make('tasks')
                 ->label('Add New Tasks')
                 ->relationship('tasks')
@@ -196,53 +210,23 @@ class EventResource extends Resource
 
         })
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->sortable()
-                    ->searchable()
-                    ->label('Event Title')
-                    ->wrap(),
-                Tables\Columns\TextColumn::make('description')
-                    ->limit(50)
-                    ->label('Description')
-                    ->wrap(),
-                Tables\Columns\TextColumn::make('location')
-                    ->label('Location')
-                    ->wrap(),
-                Tables\Columns\TextColumn::make('start_time')
-                    ->dateTime('M d, Y H:i')
-                    ->label('Start Time'),
-                Tables\Columns\TextColumn::make('end_time')
-                    ->dateTime('M d, Y H:i')
-                    ->label('End Time'),
-                Tables\Columns\TextColumn::make('max_volunteers')
-                    ->label('Max Volunteers'),
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Event Type'),
-                Tables\Columns\BooleanColumn::make('is_virtual')
-                    ->label('Is Virtual'),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status'),
-                Tables\Columns\TextColumn::make('duration')
-                    ->label('Duration (min)'),
-                Tables\Columns\TextColumn::make('tags')
-                    ->label('Tags'),
-                Tables\Columns\TextColumn::make('is_approved')
-                    ->label('Approval Status')
-                    ->formatStateUsing(function ($record, $state){
-                        if($record->whitelist) {
-                            return "Whitelist";
-                        }
-                        return $state ?? 'Pending';
-                    }) // Display "Pending" if NULL or empty
-                    ->default('Pending')
-                    ->badge()
-                    ->color(fn ($state) => match ($state ?? 'Pending') {
-                        'Pending' => 'warning',
-                        'Approved' => 'success',
-                        'Rejected' => 'danger',
-                        default => 'gray',
-                    }),
+                \Filament\Tables\Columns\Layout\Grid::make()
+                ->columns(1)
+                ->schema([
+                    SpatieMediaLibraryImageColumn::make('image')
+                ->collection('images')
+                ->defaultImageUrl('https://via.placeholder.com/100x100')
+                ->extraImgAttributes(['class' => 'w-full object-contain'])
+                ->width('250px')
+                ->height('250px')
+                ->alignment(Alignment::Center),
+            Tables\Columns\TextColumn::make('title')
+                ->searchable()
+                ->sortable(),
+                ]),
+
             ])
+            ->contentGrid(['md' => 3, 'xl' => 4])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -355,7 +339,7 @@ class EventResource extends Resource
                     Tables\Actions\Action::make('register_for_event')
                         ->label('Register for Event')
                         ->icon('heroicon-o-user-plus')
-                        ->visible(fn (Event $record) => Auth::user()->type === UserTypeEnum::VOLUNTEER->value && !$record->volunteers->contains(Auth::user()->id) && $record->status === 'Upcoming' && $record->is_approved === 'Approved')
+                        ->visible(fn (Event $record) => Auth::user()->type === UserTypeEnum::VOLUNTEER->value && $record->status === 'Upcoming' && $record->is_approved === 'Approved')
                         ->form([
                             Select::make('task_ids')
                                 ->label('Select Tasks')
@@ -427,8 +411,7 @@ class EventResource extends Resource
             ])
             ->headerActions([])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()
-                ->visible(fn (Event $record) => $record->created_by == auth()->user()->id),
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
     public static function getRelations(): array

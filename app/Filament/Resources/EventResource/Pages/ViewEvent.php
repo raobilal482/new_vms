@@ -5,8 +5,10 @@ namespace App\Filament\Resources\EventResource\Pages;
 use App\Enums\UserTypeEnum;
 use App\Filament\Resources\EventResource;
 use Filament\Actions;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
@@ -20,6 +22,14 @@ class ViewEvent extends ViewRecord
     return $infolist->schema([
         Section::make('Event Information')
             ->schema([
+
+
+                ImageEntry::make('image')
+                ->label('Event Image')
+                ->getStateUsing(fn ($record) => $record->getFirstMediaUrl('images', 'thumb') ?: asset('images/default-image.jpg'))
+                ->width('200px')
+                ->height('200px')
+                ->alignCenter(),
                 TextEntry::make('title')
                     ->label('Event Title'),
                 TextEntry::make('description')

@@ -10,7 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Form;
 use Joaopaulolndev\FilamentEditProfile\Concerns\HasSort;
@@ -46,7 +46,7 @@ class CustomProfileComponent extends EditProfileForm
             'languages' => $this->user->languages,
             'emergency_contact_name' => $this->user->emergency_contact_name,
             'emergency_contact_phone' => $this->user->emergency_contact_phone,
-            'profile_picture' => $this->user->profile_picture,
+            'profile_picture' => $this->user->getFirstMedia('profile_picture') ? $this->user->getFirstMedia('profile_picture')->getUrl() : null,
             'skills' => $this->user->skills,
             'preferred_roles' => $this->user->preferred_roles,
             'address' => $this->user->address,
@@ -62,61 +62,38 @@ class CustomProfileComponent extends EditProfileForm
                 Section::make(__('filament-edit-profile::default.profile_information'))
                     ->description(__('filament-edit-profile::default.profile_information_description'))
                     ->schema([
-                        Section::make('Profile Image')
-                            ->schema([
-                                FileUpload::make(config('filament-edit-profile.avatar_column', 'avatar_url'))
-                                    ->label(__(''))
-                                    ->avatar()
-                                    ->alignCenter()
-                                    ->disk(config('filament-edit-profile.disk', 'public'))
-                                    ->visibility(config('filament-edit-profile.visibility', 'public'))
-                                    ->directory(filament('filament-edit-profile')->getAvatarDirectory())
-                                    ->rules(filament('filament-edit-profile')->getAvatarRules()),
-                            ]),
-                            TextInput::make('name')
-                            ->label(__('filament-edit-profile::default.name'))
-                            ->required(),
+                        SpatieMediaLibraryFileUpload::make('profile_picture')
+                            ->label('Profile Picture')
+                            ->collection('profile_picture')
+                            ->preserveFilenames()
+                            ->image()
+                            ->maxFiles(1),
+
+                        TextInput::make('name')
+                            ->required()
+                            ->label('Full Name'),
 
                         TextInput::make('email')
-                            ->label(__('filament-edit-profile::default.email'))
                             ->email()
                             ->required()
-                            ->unique($this->userClass, ignorable: $this->user),
-
-                        TextInput::make('password')
-                            ->password()
-                            ->label('Password')
-                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->nullable(),
-
-                        Select::make('type')
-                            ->options([
-                                'Volunteer' => 'Volunteer',
-                                'Manager' => 'Manager',
-                                'Event Organizer' => 'Event Organizer',
-                            ])
-                            ->label('User Type')
-                            ->required()
-                            ->live()
                             ->disabled(),
 
+                        Select::make('type')
+                            ->options(UserTypeEnum::class)
+                            ->label('User Type')
+                            ->disabled()
+                            ->visible(fn () => auth()->user()->type),
+
                         PhoneInput::make('phone')
-                            ->validateFor('AUTO')
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($livewire, $component) {
-                                $livewire->validateOnly($component->getStatePath());
-                            })
-                            ->initialCountry('US')
                             ->label('Phone')
-                            ->formatOnDisplay(true)
-                            ->placeholderNumberType('FIXED_LINE')
-                            ->strictMode(),
+                            ->initialCountry('LT')
+                            ->default('+3706')
+                            ->nullable(),
 
                         DatePicker::make('date_of_birth')
                             ->label('Date of Birth')
-                            ->nullable()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
+                            ->required()
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         Select::make('availability')
                             ->options([
@@ -126,54 +103,53 @@ class CustomProfileComponent extends EditProfileForm
                                 'Evenings' => 'Evenings',
                             ])
                             ->default('Anytime')
-                            ->label('Availability'),
+                            ->label('Availability')
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         TextInput::make('languages')
                             ->label('Languages')
                             ->placeholder('e.g., English, Spanish, French')
-                            ->nullable(),
+                            ->nullable()
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         TextInput::make('emergency_contact_name')
                             ->label('Emergency Contact Name')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
-                        TextInput::make('emergency_contact_phone')
-                            ->tel()
+                        PhoneInput::make('emergency_contact_phone')
                             ->label('Emergency Contact Phone')
+                            ->initialCountry('LT')
+                            ->default('+3706')
                             ->nullable()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
-
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('skills')
                             ->label('Skills')
                             ->nullable()
-                            ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('preferred_roles')
                             ->label('Preferred Roles')
                             ->nullable()
-                            ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('address')
                             ->label('Address')
                             ->rows(3)
                             ->nullable()
-                            ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         Textarea::make('motivation')
                             ->label('Motivation')
                             ->rows(4)
                             ->nullable()
-                            ->columnSpanFull()
-                            ->visible(fn ($get) => $get('type') === UserTypeEnum::VOLUNTEER->value),
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
 
                         Toggle::make('is_active')
                             ->default(true)
-                            ->label('Active'),
+                            ->label('Active')
+                            ->visible(fn () => auth()->user()->type === UserTypeEnum::VOLUNTEER->value),
                     ])
                     ->columns(2),
             ])
@@ -183,31 +159,46 @@ class CustomProfileComponent extends EditProfileForm
     public function save(): void
     {
         $data = $this->form->getState();
-
-        // Update user attributes
+        $profilePictureState = $this->form->getComponent('profile_picture')->getState();
         $this->user->update([
             'name' => $data['name'],
-            'email' => $data['email'],
-            'type' => $data['type'],
             'phone' => $data['phone'],
-            'date_of_birth' => $data['date_of_birth'],
-            'availability' => $data['availability'],
-            'languages' => $data['languages'],
-            'emergency_contact_name' => $data['emergency_contact_name'],
-            'emergency_contact_phone' => $data['emergency_contact_phone'],
-            'profile_picture' => $data['profile_picture'],
-            'skills' => $data['skills'],
-            'preferred_roles' => $data['preferred_roles'],
-            'address' => $data['address'],
-            'motivation' => $data['motivation'],
-            'is_active' => $data['is_active'],
+            'date_of_birth' => $data['date_of_birth'] ?? null,
+            'availability' => $data['availability'] ?? null,
+            'languages' => $data['languages'] ?? null,
+            'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
+            'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
+            'skills' => $data['skills'] ?? null,
+            'preferred_roles' => $data['preferred_roles'] ?? null,
+            'address' => $data['address'] ?? null,
+            'motivation' => $data['motivation'] ?? null,
+            'is_active' => $data['is_active'] ?? true,
         ]);
 
-        // Update password if provided
-        if (!empty($data['password'])) {
-            $this->user->update(['password' => $data['password']]);
+        // Handle SpatieMediaLibraryFileUpload
+        if ($profilePictureState) {
+            // Clear existing media only if a new file is uploaded
+            $this->user->clearMediaCollection('profile_picture');
+
+            if (is_array($profilePictureState)) {
+                foreach ($profilePictureState as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        $this->user->addMedia($file->getRealPath())
+                                   ->usingFileName($file->getClientOriginalName())
+                                   ->toMediaCollection('profile_picture');
+                    }
+                }
+            } elseif (is_string($profilePictureState)) {
+                // If the state is a string, it might be a temporary path
+                $this->user->addMedia($profilePictureState)
+                           ->toMediaCollection('profile_picture');
+            } elseif ($profilePictureState instanceof TemporaryUploadedFile) {
+                $this->user->addMedia($profilePictureState->getRealPath())
+                           ->usingFileName($profilePictureState->getClientOriginalName())
+                           ->toMediaCollection('profile_picture');
+            }
         }
 
-        $this->notify('success', 'Profile updated successfully!');
+        $this->notify('success', __('filament-edit-profile::default.profile_updated'));
     }
 }
