@@ -77,6 +77,6 @@ class EventPolicy
 
     public function whitelistAction(User $user): bool
     {
-        return $user->hasPermissionTo('event.whilelist-action');
+        return $user->hasPermissionTo('event.whitelist-action');
     }
 }
