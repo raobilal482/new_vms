@@ -171,20 +171,8 @@ class EventResource extends Resource
             if ($user->type === 'Admin' || $user->hasRole('Admin')) {
                 $query->where('whitelist', false)
                     ->orWhere('whitelist',Null);
-                // dd($user->type);
                 return $query;
             }
-            // if($user->type !== 'Admin') {
-            //     return $query->where(function (Builder $query) use ($user) {
-            //         $query->where('created_by', $user->id)
-            //               ->where(function ($query) {
-            //                   $query->where('is_approved', 'Approved')
-            //                         ->orWhereNull('is_approved');
-            //               })
-            //               ->orWhere('whitelist', true)
-            //               ->orWhere('is_approved', 'Rejected');
-            //     });
-            // }
             if($user->type == UserTypeEnum::VOLUNTEER->value) {
                 return $query->where('is_approved', 'Approved');
             }
