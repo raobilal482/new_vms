@@ -133,7 +133,8 @@ class TaskResource extends Resource
                 TextColumn::make('event.title')
                     ->label('Event')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->wrap(),
 
                 // Display the names of assigned volunteers (many-to-many relationship)
                 TextColumn::make('volunteers.name')
